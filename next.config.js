@@ -17,11 +17,14 @@ const withPWA = (isDevelopment || isStaticExport)
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  // Static export for GitHub Pages
-  output: 'export',
-  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  // Conditional configuration based on build type
+  ...(isStaticExport && {
+    // GitHub Pages static export (ONLY when NEXT_PUBLIC_BASE_PATH is set)
+    output: 'export',
+    basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  }),
   images: {
-    unoptimized: true,
+    unoptimized: isStaticExport, // Only unoptimize for static export
   },
   eslint: {
     ignoreDuringBuilds: false,
@@ -31,8 +34,10 @@ const nextConfig = {
   },
   // Webpack configuration
   webpack: (config, { isServer }) => {
-    // Disable problematic caching
-    config.cache = false;
+    // Only disable cache for static export builds
+    if (isStaticExport) {
+      config.cache = false;
+    }
     
     // React Native polyfills
     config.resolve.alias = {
