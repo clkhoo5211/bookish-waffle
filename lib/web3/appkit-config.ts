@@ -50,7 +50,7 @@ export const appKit = createAppKit({
   projectId,
   metadata,
   features: {
-    analytics: true,
+    analytics: false, // Disabled to prevent ad blocker console errors
   },
   themeMode: 'light',
   themeVariables: {
