@@ -1,35 +1,19 @@
 'use client';
 
 import { WagmiProvider } from 'wagmi';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { PrivyProvider } from '@privy-io/react-auth';
-import { wagmiConfig } from './config';
+import { wagmiAdapter, getQueryClient } from './appkit-config';
 import { useState } from 'react';
-
-// Singleton QueryClient to prevent re-initialization
-let queryClientInstance: QueryClient | null = null;
-
-function getQueryClient() {
-  if (!queryClientInstance) {
-    queryClientInstance = new QueryClient({
-      defaultOptions: {
-        queries: {
-          refetchOnWindowFocus: false,
-          retry: 1,
-        },
-      },
-    });
-  }
-  return queryClientInstance;
-}
 
 interface Web3ProvidersProps {
   children: React.ReactNode;
 }
 
 export function Web3Providers({ children }: Web3ProvidersProps) {
-  // Use singleton QueryClient to prevent re-initialization
+  // Use singleton QueryClient
   const [queryClient] = useState(() => getQueryClient());
+  
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || '';
   const privyClientId = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || '';
   const hasValidPrivyId = privyAppId && privyAppId !== '' && privyAppId !== 'placeholder-app-id';
@@ -37,9 +21,9 @@ export function Web3Providers({ children }: Web3ProvidersProps) {
   // Enable Privy if we have a valid App ID
   const usePrivy = hasValidPrivyId;
 
-  // Core providers (wagmi + react-query) - always available
+  // Core providers (Reown AppKit + wagmi + react-query)
   const coreProviders = (
-    <WagmiProvider config={wagmiConfig}>
+    <WagmiProvider config={wagmiAdapter.wagmiConfig}>
       <QueryClientProvider client={queryClient}>
         {children}
       </QueryClientProvider>
@@ -69,7 +53,6 @@ export function Web3Providers({ children }: Web3ProvidersProps) {
     );
   }
 
-  // Fallback: Use wagmi only (works with external wallets like MetaMask)
+  // Fallback: Use Reown AppKit + wagmi only
   return coreProviders;
 }
-
