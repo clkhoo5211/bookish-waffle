@@ -266,6 +266,13 @@ export default function SwapPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'orderly-account-id': '0xdba37106030b22d10e10dbf65d0ae3c66d34ce71e998f6d008a43db6d560e25e',
+          'orderly-key': 'ed25519:7CcAaf8vEnBKcEREzvSx6PuhPKpKmYVLW98hyncJztma',
+          'orderly-signature': 'cMHL1HLSdFihhvrVtv_9ot4nq2BRguNm0GerLn0prXpN81DcvuUZyrENTAGcKbD_M0ObzqPw5UBinn1A7S0YDA==',
+          'origin': 'https://dex.orderly.network',
+          'referer': 'https://dex.orderly.network/',
+          'pragma': 'no-cache',
+          'cache-control': 'no-cache',
         },
         body: JSON.stringify({
           chain_id: '97',
