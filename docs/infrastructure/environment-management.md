@@ -102,11 +102,13 @@ npm run dev
    - `NEXT_PUBLIC_PRIVY_APP_ID`
    - `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID`
 3. **Update Workflow** to use secrets:
+   {% raw %}
    ```yaml
    env:
      NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
    ```
+   {% endraw %}
 
 ### Netlify
 

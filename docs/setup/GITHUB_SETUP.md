@@ -108,11 +108,13 @@ git push -u origin main
 
 3. **Configure Environment Variables**:
    - Add to `.github/workflows/deploy-pages.yml`:
+   {% raw %}
    ```yaml
    env:
      NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
      NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
    ```
+   {% endraw %}
 
 4. **Add GitHub Secrets**:
    - Go to repository Settings → Secrets and variables → Actions
