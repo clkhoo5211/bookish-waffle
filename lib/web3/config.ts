@@ -55,24 +55,19 @@ const BSC_TESTNET_RPC_URLS = [
   'https://bsc-testnet-rpc.publicnode.com',
 ];
 
-// Create wagmi config with singleton connectors
+// Create wagmi config with singleton connectors - BSC ONLY
 export const wagmiConfig = createConfig({
-  chains: [bscTestnet, bsc, mainnet, polygon, arbitrum, optimism, base],
+  chains: [bsc, bscTestnet], // ONLY BNB Smart Chain networks
   connectors: createConnectors(),
   transports: {
-    [bscTestnet.id]: http(BSC_TESTNET_RPC_URLS[0], {
-      batch: true,
-      retryCount: 3,
-    }),
     [bsc.id]: http(BSC_RPC_URLS[0], {
       batch: true,
       retryCount: 3,
     }),
-    [mainnet.id]: http(),
-    [polygon.id]: http(),
-    [arbitrum.id]: http(),
-    [optimism.id]: http(),
-    [base.id]: http(),
+    [bscTestnet.id]: http(BSC_TESTNET_RPC_URLS[0], {
+      batch: true,
+      retryCount: 3,
+    }),
   },
 });
 

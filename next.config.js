@@ -83,7 +83,7 @@ if (isDevelopment && !isStaticExport) {
               "img-src 'self' data: blob: https:",
               "font-src 'self' data: blob: https://fonts.gstatic.com https:",
               "connect-src 'self' https://*.privy.io https://*.reown.com https://*.walletconnect.com https://*.walletconnect.org https://api.web3modal.org https://api.web3modal.com wss://*.walletconnect.com wss://*.walletconnect.org https://*.infura.io https://*.alchemyapi.io https://*.etherscan.io https://*.cloudflare.com https://challenges.cloudflare.com https://*.metamask.io https://*.coinbase.com https://www.youtube.com https://youtubei.googleapis.com https://play.google.com https://*.google.com https://*.merkle.io https://eth.merkle.io wss://*.merkle.io https://*.thirdweb.com https://56.rpc.thirdweb.com https://97.rpc.thirdweb.com https://bsc-dataseed.binance.org https://bsc-dataseed1.binance.org https://bsc-dataseed2.binance.org https://bsc-dataseed3.binance.org https://bsc-dataseed4.binance.org https://data-seed-prebsc-1-s1.binance.org:8545 https://data-seed-prebsc-2-s1.binance.org:8545 https://bsc-testnet.publicnode.com https://*.nodereal.io https://*.ankr.com https://testnet-operator-evm.orderly.org",
-              "frame-src 'self' https://*.privy.io https://auth.privy.io https://challenges.cloudflare.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com",
+              "frame-src 'self' https://*.privy.io https://auth.privy.io https://challenges.cloudflare.com https://*.walletconnect.org https://verify.walletconnect.org https://*.walletconnect.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
