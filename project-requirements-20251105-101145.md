@@ -116,14 +116,16 @@ A Progressive Web App enabling secure cryptocurrency payments via Web3 across mu
 ## Design Requirements
 
 ### UI/UX Design Source
-- **Design Mockups**: Based on images from RVM design2 directory
+- **Design Mockups**: Based on images from RVM design2 directory (now copied to `design-assets/figma-mockups/`)
   - `Home.png` - Main landing page design
   - `Market Place.png` - Marketplace interface design
   - `Swap.png` - Token swap interface design
   - `Link with.png` / `Link with-1.png` - Wallet connection design
-  - `Dapp Confirmation (Payment) Details.png` - Payment confirmation design
+  - `Dapp Confirmation (Payment) Details.png` / `Dapp Confirmation (Payment) Details-1.png` - Payment confirmation designs
   - `My Token Available.png` - Token management interface design
   - `Standee.png` - Additional UI component design
+- **Location**: `design-assets/figma-mockups/` directory in project root
+- **Purpose**: Reference for UX/UI design implementation and component development
 
 ### Design System Requirements
 - **Color Scheme**: Extract from design mockups

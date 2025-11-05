@@ -11,7 +11,7 @@
 ## 🎯 Agent Workflow Dashboard
 | Agent | Task ID | Status | Dependencies | Last Update | Blocker | Generated Files | Slash Command |
 |-------|---------|--------|--------------|-------------|---------|-----------------|---------------|
-| **Init** | INIT-01 | ✅ Complete | None | 2025-11-05 10:11:45 | - | CLAUDE.md, project-requirements-20251105-101145.md, resource-links-20251105-101145.md, README.md, change-log.md, .gitignore | `/init` |
+| **Init** | INIT-01 | ✅ Complete | None | 2025-11-05 10:35:00 | - | CLAUDE.md, project-requirements-20251105-101145.md, resource-links-20251105-101145.md, README.md, change-log.md, .gitignore, .github/workflows/, GITHUB_SETUP.md, design-assets/figma-mockups/ | `/init` |
 | **Product** | PRODUCT-01 | ⏳ Pending | Init | - | - | product-strategy.md, market-research.md | `/product` |
 | **Plan** | PLAN-01 | ⏳ Pending | Product | - | - | roadmap.md, requirements.md | `/plan` |
 | **UX** | UX-01 | ⏳ Pending | Plan | - | - | wireframes/, user-flows/ | `/ux` |
@@ -71,6 +71,8 @@ This section tracks all rollback events, recovery actions, and lessons learned t
 ### From [Agent] → [Agent] ([Timestamp])
 ```
 [2025-11-05 10:11:45] Init → Plan: "Project foundation complete. Requirements gathered. Research on PWA frameworks and wallet services in progress. Ready for planning phase."
+[2025-11-05 10:30:00] Init → Plan: "GitHub workflows and deployment configuration complete. Repository ready at https://github.com/clkhoo5211/bookish-waffle. Vercel and GitHub Pages deployment options configured."
+[2025-11-05 10:35:00] Init → UX: "Design mockups copied to design-assets/figma-mockups/. All 9 design files available for UX/UI implementation reference."
 ```
 
 ## 📝 Updates & Recovery Log
