@@ -262,6 +262,9 @@ export default function SwapPage() {
     setClaimSuccess(false);
 
     try {
+      // Generate current timestamp for request freshness
+      const timestamp = Date.now().toString();
+      
       const response = await fetch('https://testnet-operator-evm.orderly.org/v1/faucet/usdc', {
         method: 'POST',
         headers: {
@@ -278,7 +281,7 @@ export default function SwapPage() {
           'orderly-account-id': '0xdba37106030b22d10e10dbf65d0ae3c66d34ce71e998f6d008a43db6d560e25e',
           'orderly-key': 'ed25519:7CcAaf8vEnBKcEREzvSx6PuhPKpKmYVLW98hyncJztma',
           'orderly-signature': 'PlzKcnhelgwD-4WHD1QNpzdW216SlEMlBaNeG8mIX-cjvBEJbtRzYdHEGp_s9YXqrpep46nImiS4UMYAVIUiBA==',
-          'orderly-timestamp': '1762359478106',
+          'orderly-timestamp': timestamp, // ✅ Dynamic timestamp for each request
           
           // CORS headers
           'Origin': 'https://dex.orderly.network',

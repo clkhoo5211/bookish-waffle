@@ -1,18 +1,14 @@
 'use client';
 
 import { createConfig, http, type CreateConnectorFn } from 'wagmi';
-import { mainnet, polygon, arbitrum, optimism, base, bsc, bscTestnet } from 'wagmi/chains';
+import { bsc, bscTestnet } from 'wagmi/chains';
 import { injected, walletConnect, metaMask } from 'wagmi/connectors';
 
-// Supported chains - BSC Testnet FIRST for deployment/development, BSC Mainnet for production
+// Supported chains - ONLY BNB Smart Chain (Mainnet + Testnet)
+// This restricts the app to BSC networks ONLY
 export const supportedChains = [
-  bscTestnet,   // BNB Smart Chain Testnet (Development) - PRIORITY
-  bsc,          // BNB Smart Chain Mainnet (Production)
-  mainnet,      // Ethereum
-  polygon,      // Polygon
-  arbitrum,     // Arbitrum
-  optimism,     // Optimism
-  base,         // Base
+  bsc,          // BNB Smart Chain Mainnet (Primary)
+  bscTestnet,   // BNB Smart Chain Testnet (For testing)
 ] as const;
 
 // Project ID for WalletConnect/Reown

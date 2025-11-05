@@ -2,7 +2,7 @@
 
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base } from '@reown/appkit/networks';
+import { bsc, bscTestnet } from '@reown/appkit/networks';
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import { QueryClient } from '@tanstack/react-query';
 
@@ -17,8 +17,9 @@ const metadata = {
   icons: ['https://clkhoo5211.github.io/bookish-waffle/icon-192.png'],
 };
 
-// Networks - BSC Mainnet FIRST for production, Testnet available as option
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base];
+// Networks - ONLY BNB Smart Chain (Mainnet + Testnet)
+// This restricts the Reown AppKit modal to show ONLY BSC networks
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [bsc, bscTestnet];
 
 // QueryClient singleton
 let queryClientInstance: QueryClient | null = null;
