@@ -18,12 +18,29 @@ jobs:
         node-version: '20.x'
         cache: 'npm'
     
+    - name: Check if package.json exists
+      id: check_package
+      run: |
+        if [ -f "package.json" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Install dependencies
+      if: steps.check_package.outputs.exists == 'true'
       run: npm ci
     
     - name: Build project
+      if: steps.check_package.outputs.exists == 'true'
       run: npm run build
       continue-on-error: true
+    
+    - name: Skip preview (no package.json)
+      if: steps.check_package.outputs.exists == 'false'
+      run: |
+        echo "⚠️ package.json not found. Skipping preview build."
+        echo "Next.js project needs to be initialized first."
     
     - name: Comment PR
       uses: actions/github-script@v7

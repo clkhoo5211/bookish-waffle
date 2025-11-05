@@ -19,13 +19,25 @@ jobs:
         node-version: '20.x'
         cache: 'npm'
     
+    - name: Check if package.json exists
+      id: check_package
+      run: |
+        if [ -f "package.json" ]; then
+          echo "exists=true" >> $GITHUB_OUTPUT
+        else
+          echo "exists=false" >> $GITHUB_OUTPUT
+        fi
+    
     - name: Install dependencies
+      if: steps.check_package.outputs.exists == 'true'
       run: npm ci
     
     - name: Install Vercel CLI
+      if: steps.check_package.outputs.exists == 'true'
       run: npm install --global vercel@latest
     
     - name: Pull Vercel Environment Information
+      if: steps.check_package.outputs.exists == 'true'
       run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -33,6 +45,7 @@ jobs:
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     - name: Build Project Artifacts
+      if: steps.check_package.outputs.exists == 'true'
       run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -40,9 +53,17 @@ jobs:
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     
     - name: Deploy Project Artifacts to Vercel
+      if: steps.check_package.outputs.exists == 'true'
       run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    
+    - name: Skip deployment (no package.json)
+      if: steps.check_package.outputs.exists == 'false'
+      run: |
+        echo "⚠️ package.json not found. Skipping Vercel deployment."
+        echo "Next.js project needs to be initialized first."
+        echo "Workflow will automatically run once project is set up."
 
