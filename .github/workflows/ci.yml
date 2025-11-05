@@ -18,20 +18,23 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v4
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-    
     - name: Check if package.json exists
       id: check_package
       run: |
         if [ -f "package.json" ]; then
           echo "exists=true" >> $GITHUB_OUTPUT
+          echo "✅ package.json found. Proceeding with CI checks."
         else
           echo "exists=false" >> $GITHUB_OUTPUT
+          echo "⚠️ package.json not found. Skipping CI checks."
         fi
+    
+    - name: Setup Node.js ${{ matrix.node-version }}
+      if: steps.check_package.outputs.exists == 'true'
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
     
     - name: Install dependencies
       if: steps.check_package.outputs.exists == 'true'
