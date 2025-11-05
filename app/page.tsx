@@ -9,6 +9,9 @@ import { Wallet, X, ChevronDown, User } from 'lucide-react';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { ConnectWallet } from '@/components/wallet/ConnectWallet';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 // Banner interface
 interface Banner {
   id: number;
@@ -326,7 +329,7 @@ export default function Home() {
 
               {/* BNB Chain Pill */}
               <div className="relative bg-gradient-to-b from-yellow-300 via-yellow-400 to-yellow-500 px-4 py-2.5 rounded-full flex items-center gap-2 flex-shrink-0 shadow-[0_2px_4px_rgba(0,0,0,0.1),0_4px_8px_rgba(0,0,0,0.05),inset_0_1px_1px_rgba(255,255,255,0.3),inset_0_-1px_2px_rgba(0,0,0,0.1)] border border-yellow-200/50">
-                <Image src="/logos/bnb.png" alt="BNB" width={20} height={20} className="relative z-10 drop-shadow-sm" />
+                <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={20} height={20} className="relative z-10 drop-shadow-sm" />
                 <span className="font-semibold text-gray-900 text-sm relative z-10">BNB Chain</span>
               </div>
             </div>
@@ -396,7 +399,7 @@ export default function Home() {
                 {/* TOTAL BNB REWARDED Card */}
                 <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-3xl p-5 mb-6 flex items-center gap-4 border border-yellow-100 shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
               <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm flex-shrink-0">
-                <Image src="/logos/bnb.png" alt="BNB" width={32} height={32} />
+                <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={32} height={32} />
               </div>
               <div className="flex-1">
                 <p className="font-bold text-gray-800 mb-1 text-sm uppercase tracking-wide">TOTAL BNB REWARDED</p>

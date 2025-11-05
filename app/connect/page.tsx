@@ -5,6 +5,9 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Wallet, RefreshCw } from 'lucide-react';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function WalletConnectPage() {
   const router = useRouter();
   const [connecting, setConnecting] = useState(false);
@@ -64,7 +67,7 @@ export default function WalletConnectPage() {
           <div className="text-center">
             <p className="text-sm text-gray-600 mb-2">Supported Network</p>
             <div className="flex items-center justify-center gap-2">
-              <Image src="/logos/bnb.png" alt="BNB" width={32} height={32} />
+              <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={32} height={32} />
               <span className="font-semibold text-gray-800">BNB Chain (BSC)</span>
             </div>
           </div>

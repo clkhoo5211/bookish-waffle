@@ -21,7 +21,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: 'RVM Web3 Payment PWA',
   description: 'Progressive Web App for cryptocurrency payments via Web3',
-  manifest: '/manifest.json',
+  manifest: './manifest.json',
 };
 
 export const viewport: Viewport = {

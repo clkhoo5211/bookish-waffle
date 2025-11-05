@@ -7,6 +7,9 @@ import { Copy, ChevronLeft } from 'lucide-react';
 import QRCode from 'react-qr-code';
 import { useAccount } from 'wagmi';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function QRPaymentPage() {
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -46,7 +49,7 @@ export default function QRPaymentPage() {
       <div className="w-full max-w-md mx-auto mb-2 relative z-10">
         <div className="flex items-center justify-center gap-3 mb-6">
           <div className="w-12 h-12 bg-[#1e3a8a] rounded-2xl flex items-center justify-center p-2">
-            <Image src="/logos/bnb.png" alt="BNB" width={32} height={32} unoptimized />
+            <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={32} height={32} unoptimized />
           </div>
           <h1 className="text-xl font-bold text-gray-800">Dapps Payment</h1>
         </div>
@@ -71,7 +74,7 @@ export default function QRPaymentPage() {
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="w-14 h-14 bg-[#1e3a8a] rounded-lg flex items-center justify-center p-2">
               <Image 
-                src="/logos/bnb.png" 
+                src={`${basePath}/logos/bnb.png`} 
                 alt="BNB" 
                 width={40} 
                 height={40}
@@ -105,10 +108,10 @@ export default function QRPaymentPage() {
         <p className="text-xl font-semibold text-white mb-4 text-center">Support BNB Chain</p>
         <div className="flex gap-4 mb-8 justify-center">
           <div className="w-14 h-14 bg-[#1e3a8a] rounded-2xl flex items-center justify-center p-2">
-            <Image src="/logos/bnb.png" alt="BNB" width={40} height={40} unoptimized />
+            <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={40} height={40} unoptimized />
           </div>
           <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center p-2">
-            <Image src="/logos/usdt.png" alt="USDT" width={40} height={40} />
+            <Image src={`${basePath}/logos/usdt.png`} alt="USDT" width={40} height={40} />
           </div>
         </div>
       </div>

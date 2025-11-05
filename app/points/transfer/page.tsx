@@ -7,6 +7,9 @@ import { useRouter } from 'next/navigation';
 import { useAccount } from 'wagmi';
 import { ChevronLeft, Scan, Copy } from 'lucide-react';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function TransferPointsPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
@@ -142,8 +145,8 @@ export default function TransferPointsPage() {
             <p className="text-sm text-gray-500 mb-3 text-center">Supported Network</p>
             <div className="flex items-center justify-center gap-2 mb-4">
               <div className="flex items-center">
-                <Image src="/logos/bnb.png" alt="BNB" width={32} height={32} className="z-0" />
-                <Image src="/logos/usdt.png" alt="USDT" width={32} height={32} className="-ml-3 z-10" />
+                <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={32} height={32} className="z-0" />
+                <Image src={`${basePath}/logos/usdt.png`} alt="USDT" width={32} height={32} className="-ml-3 z-10" />
               </div>
               <span className="font-semibold text-gray-900">BNB Chain</span>
             </div>

@@ -7,6 +7,9 @@ import { useAccount } from 'wagmi';
 import { ChevronLeft, Copy } from 'lucide-react';
 import QRCode from 'react-qr-code';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 export default function ReceivePointsPage() {
   const { address, isConnected } = useAccount();
   const [mounted, setMounted] = useState(false);
@@ -78,7 +81,7 @@ export default function ReceivePointsPage() {
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-12 h-12 bg-gray-800 rounded-lg flex items-center justify-center p-2">
                       <Image 
-                        src="/logos/bnb.png" 
+                        src={`${basePath}/logos/bnb.png`} 
                         alt="BNB" 
                         width={32} 
                         height={32}
@@ -115,8 +118,8 @@ export default function ReceivePointsPage() {
               <p className="text-sm text-gray-500 mb-3 text-center">Supported Network</p>
               <div className="flex items-center justify-center gap-2">
                 <div className="flex items-center">
-                  <Image src="/logos/bnb.png" alt="BNB" width={28} height={28} className="z-0" />
-                  <Image src="/logos/usdt.png" alt="USDT" width={28} height={28} className="-ml-2 z-10" />
+                  <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={28} height={28} className="z-0" />
+                  <Image src={`${basePath}/logos/usdt.png`} alt="USDT" width={28} height={28} className="-ml-2 z-10" />
                 </div>
                 <span className="font-semibold text-gray-900">BNB Chain</span>
               </div>

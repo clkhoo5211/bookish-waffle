@@ -9,6 +9,9 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
 import { parseEther, parseUnits, formatEther } from 'viem';
 
+// Get basePath for assets (GitHub Pages needs this)
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
 const swapTiers = [
   { total: 11000, base: 10000, bonus: 1000, priceInUSD: 100 }, // $100
   { total: 22200, base: 20000, bonus: 2200, priceInUSD: 200 }, // $200
@@ -539,7 +542,7 @@ export default function SwapPage() {
                 }`}
               >
                 <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center bg-yellow-400">
-                  <Image src="/logos/bnb.png" alt="BNB" width={48} height={48} className="rounded-full" />
+                  <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={48} height={48} className="rounded-full" />
                 </div>
                 <p className={`font-semibold ${selectedCurrency === 'BNB' ? 'text-white' : 'text-gray-900'}`}>BNB</p>
               </button>
@@ -550,7 +553,7 @@ export default function SwapPage() {
                 }`}
               >
                 <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center bg-teal-500">
-                  <Image src="/logos/usdt.png" alt="USDT" width={48} height={48} className="rounded-full" />
+                  <Image src={`${basePath}/logos/usdt.png`} alt="USDT" width={48} height={48} className="rounded-full" />
                 </div>
                 <p className={`font-semibold ${selectedCurrency === 'USDT' ? 'text-white' : 'text-gray-900'}`}>USDT</p>
               </button>
