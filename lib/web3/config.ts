@@ -1,12 +1,12 @@
 'use client';
 
-import { createConfig, http } from 'wagmi';
+import { createConfig, http, type CreateConnectorFn } from 'wagmi';
 import { mainnet, polygon, arbitrum, optimism, base, bsc, bscTestnet } from 'wagmi/chains';
 import { injected, walletConnect, metaMask } from 'wagmi/connectors';
 
-// Supported chains - BSC Testnet for development, BSC Mainnet for production
+// Supported chains - BSC Testnet FIRST for deployment/development, BSC Mainnet for production
 export const supportedChains = [
-  bscTestnet,   // BNB Smart Chain Testnet (Development)
+  bscTestnet,   // BNB Smart Chain Testnet (Development) - PRIORITY
   bsc,          // BNB Smart Chain Mainnet (Production)
   mainnet,      // Ethereum
   polygon,      // Polygon
@@ -19,9 +19,9 @@ export const supportedChains = [
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '1478687c5ec68d46a47d17c941950005';
 
 // Singleton connectors to prevent re-initialization
-let connectorsInstance: ReturnType<typeof createConnectors> | null = null;
+let connectorsInstance: CreateConnectorFn[] | null = null;
 
-function createConnectors() {
+function createConnectors(): CreateConnectorFn[] {
   if (connectorsInstance) {
     return connectorsInstance;
   }
