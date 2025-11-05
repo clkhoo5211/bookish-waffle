@@ -16,8 +16,8 @@ const metadata = {
   icons: ['https://clkhoo5211.github.io/bookish-waffle/icon-192.png'],
 };
 
-// Networks - BSC Testnet FIRST for default
-const networks = [bscTestnet, bsc, mainnet, polygon, arbitrum, optimism, base];
+// Networks - BSC Mainnet FIRST for production, Testnet available as option
+const networks = [bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base];
 
 // QueryClient singleton
 let queryClientInstance: QueryClient | null = null;

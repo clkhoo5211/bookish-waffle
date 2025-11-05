@@ -33,9 +33,9 @@ export function NetworkChecker() {
 
   const handleSwitchNetwork = async () => {
     try {
-      // Try to switch to BSC Testnet using wagmi
+      // Try to switch to BSC Mainnet using wagmi (production)
       if (switchChain) {
-        switchChain({ chainId: BSC_TESTNET_ID });
+        switchChain({ chainId: BSC_MAINNET_ID });
       }
     } catch (error: any) {
       console.error('Switch network error:', error);
@@ -50,30 +50,31 @@ export function NetworkChecker() {
   const handleAddNetwork = async () => {
     setIsAddingNetwork(true);
     try {
-      // Add BSC Testnet to wallet (using public RPC endpoints without ports)
+      // Add BSC Mainnet to wallet
       await window.ethereum?.request({
         method: 'wallet_addEthereumChain',
         params: [
           {
-            chainId: '0x61', // 97 in hex (BSC Testnet)
-            chainName: 'BNB Smart Chain Testnet',
+            chainId: '0x38', // 56 in hex (BSC Mainnet)
+            chainName: 'BNB Smart Chain',
             nativeCurrency: {
               name: 'BNB',
-              symbol: 'tBNB',
+              symbol: 'BNB',
               decimals: 18,
             },
             rpcUrls: [
-              'https://bsc-testnet.publicnode.com',
-              'https://97.rpc.thirdweb.com'
+              'https://bsc-dataseed.binance.org',
+              'https://bsc.publicnode.com',
+              'https://56.rpc.thirdweb.com'
             ],
-            blockExplorerUrls: ['https://testnet.bscscan.com/'],
+            blockExplorerUrls: ['https://bscscan.com/'],
           },
         ],
       });
       setShowPrompt(false);
     } catch (error: any) {
       console.error('Add network error:', error);
-      alert('Failed to add BNB Smart Chain Testnet. Please add it manually in your wallet settings.');
+      alert('Failed to add BNB Smart Chain. Please add it manually in your wallet settings.');
     } finally {
       setIsAddingNetwork(false);
     }
@@ -92,7 +93,7 @@ export function NetworkChecker() {
             <div className="flex-1">
               <h3 className="font-bold text-gray-900 mb-1">Wrong Network Detected</h3>
               <p className="text-sm text-gray-700 mb-3">
-                Please switch to <strong>BNB Smart Chain Testnet</strong> to use RVMPlus Dapps.
+                Please switch to <strong>BNB Smart Chain</strong> to use RVMPlus Dapps.
               </p>
               <div className="flex gap-2">
                 <button
