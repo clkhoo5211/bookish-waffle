@@ -11,7 +11,7 @@
 ## 🎯 Agent Workflow Dashboard
 | Agent | Task ID | Status | Dependencies | Last Update | Blocker | Generated Files | Slash Command |
 |-------|---------|--------|--------------|-------------|---------|-----------------|---------------|
-| **Init** | INIT-01 | ✅ Complete | None | 2025-11-05 10:11:45 | - | CLAUDE.md, project-requirements.md | `/init` |
+| **Init** | INIT-01 | ✅ Complete | None | 2025-11-05 10:11:45 | - | CLAUDE.md, project-requirements-20251105-101145.md, resource-links-20251105-101145.md, README.md, change-log.md, .gitignore | `/init` |
 | **Product** | PRODUCT-01 | ⏳ Pending | Init | - | - | product-strategy.md, market-research.md | `/product` |
 | **Plan** | PLAN-01 | ⏳ Pending | Product | - | - | roadmap.md, requirements.md | `/plan` |
 | **UX** | UX-01 | ⏳ Pending | Plan | - | - | wireframes/, user-flows/ | `/ux` |
