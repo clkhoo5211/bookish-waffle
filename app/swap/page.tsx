@@ -265,17 +265,34 @@ export default function SwapPage() {
       const response = await fetch('https://testnet-operator-evm.orderly.org/v1/faucet/usdc', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          // Standard headers
+          'Accept': '*/*',
+          'Accept-Encoding': 'gzip, deflate, br, zstd',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6,ms;q=0.5,ja;q=0.4,ru;q=0.3,th;q=0.2,fr;q=0.1',
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json;charset=utf-8',
+          'Pragma': 'no-cache',
+          'Priority': 'u=1, i',
+          
+          // Orderly Network authentication headers
           'orderly-account-id': '0xdba37106030b22d10e10dbf65d0ae3c66d34ce71e998f6d008a43db6d560e25e',
           'orderly-key': 'ed25519:7CcAaf8vEnBKcEREzvSx6PuhPKpKmYVLW98hyncJztma',
           'orderly-signature': 'PlzKcnhelgwD-4WHD1QNpzdW216SlEMlBaNeG8mIX-cjvBEJbtRzYdHEGp_s9YXqrpep46nImiS4UMYAVIUiBA==',
           'orderly-timestamp': '1762359478106',
-          'origin': 'https://dex.orderly.network',
-          'referer': 'https://dex.orderly.network/',
-          'pragma': 'no-cache',
-          'priority': 'u=1, i',
-          'sec-ch-ua': '"Google Chrome";v="141", "Not?A_Brand";v="8", "Chromium";v="141"',
-          'cache-control': 'no-cache',
+          
+          // CORS headers
+          'Origin': 'https://dex.orderly.network',
+          'Referer': 'https://dex.orderly.network/',
+          
+          // Note: The following headers are automatically set by the browser and CANNOT be manually set:
+          // - :authority (HTTP/2 pseudo-header, derived from URL)
+          // - :method (HTTP/2 pseudo-header, derived from method: 'POST')
+          // - :path (HTTP/2 pseudo-header, derived from URL path)
+          // - :scheme (HTTP/2 pseudo-header, always 'https' for HTTPS URLs)
+          // - Content-Length (automatically calculated from body)
+          // - sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform (browser-controlled, forbidden to set)
+          // - sec-fetch-dest, sec-fetch-mode, sec-fetch-site (browser-controlled, forbidden to set)
+          // - User-Agent (browser-controlled, forbidden to set)
         },
         body: JSON.stringify({
           chain_id: '97',
