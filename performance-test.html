@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RVMplus Load Performance Test</title>
+</head>
+<body>
+  <h1>Performance Test</h1>
+  <div id="results"></div>
+  <script>
+    const testUrl = 'http://localhost:3000';
+    const startTime = performance.now();
+    
+    // Measure initial load
+    window.addEventListener('DOMContentLoaded', () => {
+      const domTime = performance.now() - startTime;
+      console.log(`DOM Ready: ${domTime.toFixed(2)}ms`);
+    });
+    
+    window.addEventListener('load', () => {
+      const loadTime = performance.now() - startTime;
+      console.log(`Full Load: ${loadTime.toFixed(2)}ms`);
+      
+      // Get performance metrics
+      const perf = performance.getEntriesByType('navigation')[0];
+      if (perf) {
+        document.getElementById('results').innerHTML = `
+          <h2>Load Time Breakdown:</h2>
+          <ul>
+            <li>DNS Lookup: ${perf.domainLookupEnd - perf.domainLookupStart}ms</li>
+            <li>TCP Connection: ${perf.connectEnd - perf.connectStart}ms</li>
+            <li>Server Response: ${perf.responseEnd - perf.requestStart}ms</li>
+            <li>DOM Processing: ${perf.domComplete - perf.domLoading}ms</li>
+            <li>Total Load Time: ${perf.loadEventEnd - perf.fetchStart}ms</li>
+          </ul>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
