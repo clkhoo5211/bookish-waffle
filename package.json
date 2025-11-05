@@ -4,7 +4,7 @@
   "private": true,
   "description": "A Progressive Web App (PWA) enabling secure cryptocurrency payments via Web3 across multiple blockchain networks.",
   "scripts": {
-    "dev": "next dev",
+    "dev": "NODE_ENV=development next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
