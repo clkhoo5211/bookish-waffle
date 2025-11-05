@@ -1,0 +1,64 @@
+# Image Assets Directory
+
+## Required Images for Full Figma Mockup Matching
+
+### Home Page Promotional Banners:
+
+1. **`banner-thumbs-up.jpg`** (or `.png`)
+   - Description: Photo of a smiling person in business attire giving thumbs up
+   - Dimensions: Approximately 320x140px (or higher resolution)
+   - Usage: "Redeem RVMPlus Now!" banner
+
+2. **`banner-community-globe.jpg`** (or `.png`)
+   - Description: Photo of diverse group of people holding hands in front of a globe sculpture with city skyline
+   - Dimensions: Approximately 600x400px (or higher resolution, 16:9 aspect ratio)
+   - Usage: "EARN BNB REWARD" banner
+
+### Merchant Assets (Marketplace & Tokens):
+
+3. **`merchant-coffee-logo.png`**
+   - Description: Logo or photo for "The Roasted Bean Coffee Co."
+   - Dimensions: 80x80px (square, transparent background preferred)
+
+4. **`merchant-fish-chips-logo.png`**
+   - Description: Logo or photo for "Nas Fish n Chips"
+   - Dimensions: 80x80px (square, transparent background preferred)
+
+### Optional Enhancements:
+
+5. **`standee-qr-code.png`**
+   - Description: Actual QR code for payment standee
+   - Dimensions: 300x300px (square)
+
+## How to Use These Images:
+
+Once you have the actual images:
+
+1. Place them in this `/public/images/` directory
+2. Update the components to use actual images instead of placeholders:
+   - `app/page.tsx` - Update PhotoPlaceholder components with `<Image>` components
+   - `components/merchant/MerchantCard.tsx` - Replace emoji with `<Image>` component
+   - `app/tokens/page.tsx` - Replace Coffee/Store icons with merchant logos
+
+Example code for replacing PhotoPlaceholder:
+
+```tsx
+// Instead of:
+<PhotoPlaceholder type="thumbs-up-person" />
+
+// Use:
+<Image 
+  src="/images/banner-thumbs-up.jpg" 
+  alt="Business person giving thumbs up"
+  width={320}
+  height={140}
+  className="object-cover"
+/>
+```
+
+## Image Sources:
+
+- **Free Stock Photos**: Unsplash, Pexels, Pixabay
+- **Generated Images**: Midjourney, DALL-E, Stable Diffusion
+- **Custom Photography**: From actual merchants or brand photoshoots
+

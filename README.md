@@ -1,107 +1,119 @@
 # RVM Web3 Payment PWA
 
-A Progressive Web App (PWA) enabling secure cryptocurrency payments via Web3 across multiple blockchain networks.
+A Progressive Web App enabling secure cryptocurrency payments via Web3 across multiple blockchain networks.
 
-## 🎯 Project Overview
+## Features
 
-This PWA provides a comprehensive platform for cryptocurrency payments with features including:
-- **Marketplace**: Browse and purchase items/services with crypto
-- **Token Swap**: Exchange tokens across different blockchain networks
-- **Wallet Connection**: Connect external wallets or use embedded wallet solutions
-- **Payment Processing**: Secure multi-chain payment confirmation and processing
-- **Token Management**: View and manage token balances across chains
+- 🔐 **Multi-Wallet Support**: Connect with Privy (embedded), MetaMask, WalletConnect, and more
+- 🌐 **Multi-Chain**: Support for Ethereum, Polygon, and more (Arbitrum, Optimism, Base, BSC in Phase 2)
+- 💳 **Payment Processing**: Send cryptocurrency payments securely
+- 🔄 **Token Swap**: Exchange tokens seamlessly
+- 🛒 **Marketplace**: Browse and purchase items with crypto
+- 📱 **PWA**: Installable Progressive Web App with offline support
+- 🎨 **Modern UI**: Built with Tailwind CSS and responsive design
 
-## 🏗️ Technology Stack
+## Tech Stack
 
-- **Framework**: Next.js 14 with TypeScript
-- **Web3 Libraries**: wagmi + viem
-- **Wallet Services**: Privy (embedded wallets) + Reown/WalletConnect (external wallets)
-- **Styling**: Tailwind CSS (recommended)
-- **PWA**: next-pwa plugin
-- **State Management**: Zustand or React Context
-
-## 📋 Design Source
-
-UI/UX designs are based on mockups from the RVM design2 directory:
-- Home page
-- Marketplace interface
-- Token swap interface
-- Wallet connection screens
-- Payment confirmation flows
-- Token management interface
-
-## 🚀 Getting Started
-
-### Prerequisites
-- Node.js 18+
-- npm, yarn, or pnpm
-- Git
-
-### Installation
-
-```bash
-# Clone the repository
-git clone <repository-url>
-cd project-20251105-101145-rvm-web3-pwa
-
-# Install dependencies
-npm install
-
-# Set up environment variables
-cp .env.example .env.local
-# Edit .env.local with your configuration
-
-# Run development server
-npm run dev
-```
-
-### Environment Variables
-
-Create a `.env.local` file with:
-
-```env
-# Wallet Service Configuration
-NEXT_PUBLIC_PRIVY_APP_ID=your_privy_app_id
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_walletconnect_project_id
-
-# Blockchain RPC URLs (optional, uses public RPCs by default)
-NEXT_PUBLIC_ETHEREUM_RPC_URL=
-NEXT_PUBLIC_POLYGON_RPC_URL=
-NEXT_PUBLIC_BSC_RPC_URL=
-```
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS
+- **Web3**: wagmi + viem
+- **Wallets**: Privy + Reown/WalletConnect
+- **State Management**: Zustand
+- **PWA**: next-pwa
 
 ## 📚 Documentation
 
-- **Project Requirements**: See `project-requirements-20251105-101145.md`
-- **Research & Resources**: See `resource-links-20251105-101145.md`
-- **Agent Workflow**: See `CLAUDE.md`
-- **Change Log**: See `change-log.md`
+Comprehensive documentation is available in the [`/docs`](./docs/) directory:
 
-## 🔗 Useful Links
+- **[Setup & Configuration](./docs/setup/)** - Initial setup, Privy config, environment variables
+- **[Development](./docs/development/)** - Development guidelines and verification reports
+- **[Architecture](./docs/architecture/)** - System design, API specs, components
+- **[Product & Planning](./docs/product/)** - Product strategy, roadmap, requirements
+- **[Design](./docs/design/)** - Design system, wireframes, user flows
+- **[Infrastructure](./docs/infrastructure/)** - DevOps, CI/CD, deployment
+- **[Troubleshooting](./docs/troubleshooting/)** - Common issues and solutions
+- **[Reports](./docs/reports/)** - Development status and progress reports
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [wagmi Documentation](https://wagmi.sh/)
-- [Privy Documentation](https://docs.privy.io/)
-- [Reown/WalletConnect Documentation](https://docs.reown.com/)
-- [PWA Best Practices](https://web.dev/progressive-web-apps/)
+Quick links:
+- [Privy Setup Guide](./docs/setup/PRIVY_SETUP.md)
+- [Console Errors Guide](./docs/troubleshooting/CONSOLE_ERRORS_GUIDE.md)
+- [Token Addresses](./docs/setup/TOKEN_ADDRESSES.md)
 
-## 📝 Development Status
+## Getting Started
 
-**Current Phase**: Planning  
-**Last Updated**: 2025-11-05 10:11:45
+### Prerequisites
 
-See `CLAUDE.md` for detailed agent workflow and project status.
+- Node.js 18+ and npm 9+
 
-## 🤝 Contributing
+### Installation
 
-This project follows the Multi-Agent SDLC Framework. See the framework documentation for contribution guidelines.
+1. Clone the repository:
+```bash
+git clone https://github.com/clkhoo5211/bookish-waffle.git
+cd bookish-waffle
+```
 
-## 📄 License
+2. Install dependencies:
+```bash
+npm install
+```
 
-[To be determined]
+3. Set up environment variables:
+```bash
+cp .env.example .env
+```
 
----
+Edit `.env` and add your:
+- `NEXT_PUBLIC_PRIVY_APP_ID` (Get from https://privy.io)
+- `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` (Get from https://cloud.reown.com)
 
-**Project Created**: 2025-11-05 10:11:45  
-**Framework**: Multi-Agent SDLC v2.0
+4. Run the development server:
+```bash
+npm run dev
+```
 
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+## Project Structure
+
+```
+├── app/                    # Next.js App Router pages
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx           # Home page
+│   ├── marketplace/       # Marketplace page
+│   ├── swap/              # Token swap page
+│   ├── tokens/            # Token management page
+│   └── payment/           # Payment page
+├── components/            # React components
+│   ├── ui/               # Base UI components
+│   ├── wallet/           # Wallet components
+│   └── layout/           # Layout components
+├── lib/                   # Utility libraries
+│   └── web3/             # Web3 configuration
+├── store/                 # Zustand stores
+├── types/                 # TypeScript types
+└── public/                # Static assets
+```
+
+## Development
+
+### Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run type-check` - Run TypeScript type checking
+
+## Deployment
+
+The project is configured for deployment on:
+- **GitHub Pages**: Automated via GitHub Actions
+- **Vercel**: Recommended for Next.js apps
+
+See `.github/workflows/` for CI/CD configuration.
+
+## License
+
+ISC
