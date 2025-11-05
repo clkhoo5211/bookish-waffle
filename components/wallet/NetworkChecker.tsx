@@ -2,15 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAccount, useChainId, useSwitchChain } from 'wagmi';
-import { bsc } from 'wagmi/chains';
 import { AlertCircle, RefreshCw } from 'lucide-react';
-
-// Extend Window interface for Ethereum provider
-declare global {
-  interface Window {
-    ethereum?: any;
-  }
-}
 
 export function NetworkChecker() {
   const { isConnected, address } = useAccount();
@@ -21,6 +13,7 @@ export function NetworkChecker() {
 
   const BSC_MAINNET_ID = 56; // BNB Smart Chain Mainnet
   const BSC_TESTNET_ID = 97; // BNB Smart Chain Testnet
+  
   const isCorrectNetwork = chainId === BSC_MAINNET_ID || chainId === BSC_TESTNET_ID;
 
   useEffect(() => {
@@ -33,7 +26,7 @@ export function NetworkChecker() {
 
   const handleSwitchNetwork = async () => {
     try {
-      // Try to switch to BSC Mainnet using wagmi (production)
+      // Switch to BSC Mainnet
       if (switchChain) {
         switchChain({ chainId: BSC_MAINNET_ID });
       }
@@ -48,10 +41,16 @@ export function NetworkChecker() {
   };
 
   const handleAddNetwork = async () => {
+    const ethereum = (window as any).ethereum;
+    if (!ethereum) {
+      alert('Please install a wallet like MetaMask to add networks.');
+      return;
+    }
+
     setIsAddingNetwork(true);
     try {
-      // Add BSC Mainnet to wallet
-      await window.ethereum?.request({
+      // Add BSC Mainnet
+      await ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [
           {
@@ -72,9 +71,10 @@ export function NetworkChecker() {
         ],
       });
       setShowPrompt(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Add network error:', error);
-      alert('Failed to add BNB Smart Chain. Please add it manually in your wallet settings.');
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to add BNB Smart Chain. Please add it manually in your wallet settings. Error: ${errorMessage}`);
     } finally {
       setIsAddingNetwork(false);
     }
@@ -126,4 +126,3 @@ export function NetworkChecker() {
     </div>
   );
 }
-

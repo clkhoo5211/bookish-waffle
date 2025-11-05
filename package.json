@@ -5,7 +5,7 @@
   "description": "A Progressive Web App (PWA) enabling secure cryptocurrency payments via Web3 across multiple blockchain networks.",
   "scripts": {
     "dev": "NODE_ENV=development next dev",
-    "build": "next build",
+    "build": "NEXT_PUBLIC_BASE_PATH=/bookish-waffle next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",

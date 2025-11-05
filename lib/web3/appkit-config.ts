@@ -3,12 +3,13 @@
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base } from '@reown/appkit/networks';
+import type { AppKitNetwork } from '@reown/appkit/networks';
 import { QueryClient } from '@tanstack/react-query';
 
-// Project ID for Reown AppKit
+// Project ID from environment variables
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '1478687c5ec68d46a47d17c941950005';
 
-// Metadata for the dApp
+// Metadata for WalletConnect modal
 const metadata = {
   name: 'RVMplus Dapps',
   description: 'Progressive Web App for cryptocurrency payments and loyalty rewards',
@@ -17,7 +18,7 @@ const metadata = {
 };
 
 // Networks - BSC Mainnet FIRST for production, Testnet available as option
-const networks = [bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base];
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [bsc, bscTestnet, mainnet, polygon, arbitrum, optimism, base];
 
 // QueryClient singleton
 let queryClientInstance: QueryClient | null = null;
@@ -35,31 +36,25 @@ export function getQueryClient() {
   return queryClientInstance;
 }
 
-// Wagmi Adapter with custom RPC endpoints
+// Create Wagmi Adapter
 export const wagmiAdapter = new WagmiAdapter({
   networks,
   projectId,
   ssr: true,
 });
 
-// Create AppKit modal
-if (typeof window !== 'undefined') {
-  createAppKit({
-    adapters: [wagmiAdapter],
-    networks,
-    projectId,
-    metadata,
-    features: {
-      analytics: true,
-      email: false, // Disable email login (using Privy for this)
-      socials: false, // Disable social logins (using Privy for this)
-      emailShowWallets: false,
-    },
-    themeMode: 'light',
-    themeVariables: {
-      '--w3m-accent': '#14b8a6', // Teal color
-      '--w3m-border-radius-master': '16px',
-    },
-  });
-}
-
+// Create AppKit modal instance
+export const appKit = createAppKit({
+  adapters: [wagmiAdapter],
+  networks,
+  projectId,
+  metadata,
+  features: {
+    analytics: true,
+  },
+  themeMode: 'light',
+  themeVariables: {
+    '--w3m-accent': '#14b8a6', // Teal accent color
+    '--w3m-border-radius-master': '16px',
+  },
+});
