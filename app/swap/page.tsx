@@ -220,6 +220,7 @@ export default function SwapPage() {
     if (isApproveSuccess && swapStep === 'approving') {
       performSwap();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproveSuccess, swapStep]);
 
   const getButtonText = () => {
@@ -480,7 +481,7 @@ export default function SwapPage() {
                   <strong>Step 1 of 2:</strong> Approve RVM contract to spend your {selectedCurrency === 'USDT' && chainId === 97 ? 'USDC' : selectedCurrency}
                 </p>
                 <p className="text-xs text-blue-700">
-                  This is a one-time approval. You'll need to confirm in your wallet.
+                  This is a one-time approval. You&apos;ll need to confirm in your wallet.
                 </p>
               </div>
             </div>

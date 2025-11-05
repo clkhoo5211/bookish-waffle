@@ -559,6 +559,7 @@ export default function Home() {
                 {/* Image Content */}
                 {currentBanner.type === 'image' && currentBanner.imageUrl ? (
                   <div className="mb-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={currentBanner.imageUrl} 
                       alt={currentBanner.title}
@@ -570,6 +571,7 @@ export default function Home() {
                 {/* GIF Content */}
                 {currentBanner.type === 'gif' && currentBanner.gifUrl ? (
                   <div className="mb-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={currentBanner.gifUrl} 
                       alt={currentBanner.title}

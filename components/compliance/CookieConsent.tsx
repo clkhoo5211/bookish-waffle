@@ -62,7 +62,7 @@ export const CookieConsent: React.FC<CookieConsentProps> = ({
               and require your consent.
             </p>
             <p className="text-gray-600 text-xs mt-2">
-              By clicking "Accept All", you consent to our use of cookies. You can customize your
+              By clicking &quot;Accept All&quot;, you consent to our use of cookies. You can customize your
               preferences or reject optional cookies at any time.{' '}
               <a
                 href="/docs/compliance/cookie-policy"
