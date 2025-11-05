@@ -31,8 +31,8 @@ function createConnectors(): CreateConnectorFn[] {
       metadata: {
         name: 'RVMplus Dapps',
         description: 'Progressive Web App for cryptocurrency payments',
-        url: typeof window !== 'undefined' ? window.location.origin : 'https://rvmplus.app',
-        icons: ['https://rvmplus.app/icon-192.png'],
+        url: typeof window !== 'undefined' ? window.location.origin : 'https://clkhoo5211.github.io/bookish-waffle',
+        icons: ['https://clkhoo5211.github.io/bookish-waffle/icon-192.png'],
       },
     }),
   ];
