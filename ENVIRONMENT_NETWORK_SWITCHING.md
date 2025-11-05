@@ -250,6 +250,7 @@ NEXT_PUBLIC_PRIVY_CLIENT_ID=client-WY6SUcpGx59dgr9C73d59HvjevCkyudGZ75wqRRtE4Urc
 ```
 
 ### **For Production (GitHub Secrets):**
+{% raw %}
 ```env
 # In .github/workflows/deploy-pages.yml:
 NEXT_PUBLIC_BASE_PATH=/bookish-waffle
@@ -257,6 +258,7 @@ NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJE
 NEXT_PUBLIC_PRIVY_APP_ID=${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
 NEXT_PUBLIC_PRIVY_CLIENT_ID=${{ secrets.NEXT_PUBLIC_PRIVY_CLIENT_ID }}
 ```
+{% endraw %}
 
 **Note:** If secrets not set, fallback values used (from deploy-pages.yml).
 

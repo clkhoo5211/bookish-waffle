@@ -25,6 +25,7 @@ Per [Privy Installation Docs](https://docs.privy.io/basics/react/installation):
 Per [Privy Setup Docs](https://docs.privy.io/basics/react/setup):
 
 #### **1. PrivyProvider Configuration** ✅
+{% raw %}
 ```typescript
 // lib/web3/providers.tsx
 <PrivyProvider
@@ -45,6 +46,7 @@ Per [Privy Setup Docs](https://docs.privy.io/basics/react/setup):
   {children}
 </PrivyProvider>
 ```
+{% endraw %}
 
 **Status**: ✅ Correctly implemented per documentation
 

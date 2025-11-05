@@ -76,12 +76,14 @@ const nextConfig = {
 ```
 
 ### Root Cause:
+{% raw %}
 ```yaml
 # .github/workflows/deploy-pages.yml (OLD - BROKEN)
 env:
   NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
   # ↑ This secret doesn't exist in GitHub → returns empty string
 ```
+{% endraw %}
 
 **What GitHub Secrets Does:**
 - GitHub Secrets are variables you manually add in repository settings
@@ -105,6 +107,7 @@ return coreProviders;  // ← Always returned this (no Privy)
 ---
 
 ### ✅ Solution Applied:
+{% raw %}
 ```yaml
 # .github/workflows/deploy-pages.yml (NEW - FIXED)
 env:
@@ -112,6 +115,7 @@ env:
   NEXT_PUBLIC_PRIVY_CLIENT_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_CLIENT_ID || 'client-WY6SUcpGx...' }}
   # ↑ Falls back to actual values if secrets don't exist
 ```
+{% endraw %}
 
 **How Fallbacks Work:**
 1. GitHub Actions checks if `secrets.NEXT_PUBLIC_PRIVY_APP_ID` exists
@@ -226,10 +230,12 @@ Result:
 ---
 
 ### Fix #2: Environment Variable Fallbacks
+{% raw %}
 ```diff
 - NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
 + NEXT_PUBLIC_PRIVY_APP_ID: ${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID || 'cmhj5egoh00lmjm0cdu57d2ja' }}
 ```
+{% endraw %}
 
 **Impact:**
 - ✅ Privy enabled in GitHub Pages (even without secrets)
