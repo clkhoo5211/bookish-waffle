@@ -1,57 +1,86 @@
 /** @type {import('next').NextConfig} */
-// OPTIMIZED CONFIG FOR FAST DEVELOPMENT
+// MAXIMUM PERFORMANCE OPTIMIZED CONFIG
 
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 const nextConfig = {
-  reactStrictMode: false, // Disable strict mode to avoid double-rendering issues
+  reactStrictMode: false,
   swcMinify: true,
   
-  // Transpile Reown AppKit packages
+  // Transpile only what's needed
   transpilePackages: ['@reown/appkit', '@reown/appkit-adapter-wagmi'],
+  
+  // Production-like optimizations even in dev
+  compiler: {
+    removeConsole: isDevelopment ? false : { exclude: ['error', 'warn'] },
+  },
   
   // Optimize for faster dev server
   ...(isDevelopment && {
-    // Disable type checking during dev (run separately)
     typescript: {
-      ignoreBuildErrors: true, // Speed up dev, check types separately
+      ignoreBuildErrors: true,
     },
-    // Disable ESLint during dev (run separately)
     eslint: {
-      ignoreDuringBuilds: true, // Speed up dev, lint separately
+      ignoreDuringBuilds: true,
     },
   }),
   
   images: {
-    unoptimized: true, // Faster image loading in dev
+    unoptimized: true,
+    // Add domains if loading external images
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
   },
   
-  // Webpack optimization
+  // Advanced webpack optimization
   webpack: (config, { dev, isServer }) => {
-    // Fix Reown AppKit icon loading issues
+    // Optimize bundle splitting
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
+        moduleIds: 'deterministic',
+        runtimeChunk: 'single',
         splitChunks: {
           chunks: 'all',
           cacheGroups: {
-            // Keep phosphor-icons in main bundle to avoid chunk loading errors
-            phosphor: {
-              test: /[\\/]node_modules[\\/]phosphor-icons/,
-              name: 'phosphor-icons',
+            // Vendor chunk for stable libraries
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            // Reown AppKit separate chunk (large library)
+            reown: {
+              test: /[\\/]node_modules[\\/]@reown/,
+              name: 'reown',
               chunks: 'all',
               priority: 20,
             },
-            // Keep Reown AppKit in main bundle
-            reown: {
-              test: /[\\/]node_modules[\\/]@reown/,
-              name: 'reown-appkit',
+            // Phosphor icons bundled
+            phosphor: {
+              test: /[\\/]node_modules[\\/]phosphor-icons/,
+              name: 'phosphor',
               chunks: 'all',
               priority: 20,
+            },
+            // wagmi/viem
+            web3: {
+              test: /[\\/]node_modules[\\/](wagmi|viem|@wagmi)/,
+              name: 'web3',
+              chunks: 'all',
+              priority: 15,
             },
           },
         },
       };
+
+      // Reduce module resolution time
+      config.resolve.symlinks = false;
     }
     
     // React Native polyfills
@@ -74,20 +103,46 @@ const nextConfig = {
     return config;
   },
   
-  // Simplified headers for dev
-  ...(isDevelopment && {
-    headers: async () => {
-      return [
-        {
-          source: '/:path*',
-          headers: [
-            { key: 'X-DNS-Prefetch-Control', value: 'on' },
-            { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          ],
-        },
-      ];
-    },
-  }),
+  // Optimized headers
+  headers: async () => {
+    return [
+      {
+        source: '/:path*',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          },
+          {
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN'
+          },
+          {
+            key: 'X-Content-Type-Options',
+            value: 'nosniff'
+          },
+          {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block'
+          },
+          {
+            key: 'Referrer-Policy',
+            value: 'origin-when-cross-origin'
+          },
+        ],
+      },
+    ];
+  },
+  
+  // Enable experimental features for better performance
+  experimental: {
+    optimizeCss: true, // Enable CSS optimization
+    optimizePackageImports: ['lucide-react', '@reown/appkit'], // Tree-shake these packages
+  },
 };
 
 module.exports = nextConfig;

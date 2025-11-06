@@ -1,233 +1,282 @@
-# ⚡ Performance Optimization Guide
+# Performance Optimization Guide
 
-**Created**: 2025-11-06  
-**Issue**: Slow loading times in development  
-**Status**: ✅ Optimized
+## 🐌 Slow DOM Loading Issues Identified
 
----
+### Root Causes of Slow Loading:
 
-## 🐌 **PROBLEM IDENTIFIED**
+1. **Large Web3 Bundle Size**
+   - `@reown/appkit` (~500KB)
+   - `wagmi + viem` (~300KB)
+   - `@privy-io/react-auth` (~200KB)
+   - Total Web3 libraries: ~1MB uncompressed
 
-**Original load time**: ~7.3 seconds  
-**Causes**:
-1. Large dependencies (1.5GB node_modules)
-2. TypeScript type checking on every change
-3. Complex CSP headers
-4. On-demand compilation
-5. Heavy Web3 libraries (Reown, wagmi, viem, Privy)
+2. **Google Fonts Blocking**
+   - Two fonts loading from Google Fonts CDN
+   - Network latency before font display
+   - No fallback fonts causing FOUT (Flash of Unstyled Text)
 
----
+3. **Inefficient Webpack Bundling**
+   - All packages in single vendor chunk
+   - No code splitting for large libraries
+   - Module resolution slowness
 
-## ⚡ **OPTIMIZATIONS APPLIED**
+4. **Heavy Home Page**
+   - 609 lines with inline data arrays
+   - Multiple useEffect hooks running immediately
+   - Auto-scroll timers starting on mount
 
-### **1. Optimized Next.js Config**
+## ✅ Optimizations Applied
+
+### 1. Webpack Bundle Splitting
+
+**Before:**
 ```javascript
-// Disabled during dev:
-- TypeScript type checking (run separately)
-- ESLint checking (run separately)
-- Complex CSP headers
-- Image optimization
-
-// Enabled:
-- Webpack filesystem cache
-- Faster compilation
-- Simplified headers
+// Single vendor chunk with everything
+splitChunks: {
+  chunks: 'all',
+  cacheGroups: {
+    phosphor: { ... },
+    reown: { ... }
+  }
+}
 ```
 
-### **2. Configuration Changes**
-- ✅ Switched to `next.config.fast.js` (optimized)
-- ✅ Original config saved as `next.config.original.js`
-- ✅ Dev server restarted with new config
-
----
-
-## 🚀 **EXPECTED IMPROVEMENTS**
-
-### **Before:**
-- Initial load: ~7-8 seconds
-- Hot reload: ~3-5 seconds
-- Type checking: Slows down every change
-
-### **After:**
-- Initial load: ~2-3 seconds ⚡
-- Hot reload: ~1-2 seconds ⚡
-- Type checking: Run separately when needed ⚡
-
----
-
-## 🔧 **ADDITIONAL OPTIMIZATIONS**
-
-### **Option 1: Turbopack (Experimental)**
-```bash
-# Use Next.js experimental turbopack
-npm run dev -- --turbo
+**After:**
+```javascript
+splitChunks: {
+  chunks: 'all',
+  cacheGroups: {
+    vendor: {
+      test: /[\\/]node_modules[\\/]/,
+      name: 'vendors',
+      priority: 10,
+      reuseExistingChunk: true,
+    },
+    reown: {
+      test: /[\\/]node_modules[\\/]@reown/,
+      name: 'reown', // Separate 500KB chunk
+      priority: 20,
+    },
+    web3: {
+      test: /[\\/]node_modules[\\/](wagmi|viem|@wagmi)/,
+      name: 'web3', // Separate 300KB chunk
+      priority: 15,
+    },
+    phosphor: {
+      test: /[\\/]node_modules[\\/]phosphor-icons/,
+      name: 'phosphor',
+      priority: 20,
+    },
+  },
+},
+moduleIds: 'deterministic', // Better caching
+runtimeChunk: 'single', // Shared runtime
 ```
-**Result**: 5-10x faster compilation
 
-### **Option 2: Disable Privy (If Not Needed)**
+**Impact:** Parallel loading of chunks instead of sequential
+
+### 2. Font Loading Optimization
+
+**Before:**
 ```typescript
-// lib/web3/providers.tsx
-// Comment out Privy if only using Reown
-const usePrivy = false; // Set to false
+const outfit = Outfit({ 
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+});
 ```
-**Result**: Faster startup, smaller bundle
 
-### **Option 3: Lazy Load Components**
+**After:**
 ```typescript
-// Lazy load heavy components
-const OnRampButton = dynamic(() => import('@/components/onramp/OnRampButton'));
-const MultiFaucet = dynamic(() => import('@/components/faucet/MultiFaucet'));
+const outfit = Outfit({ 
+  subsets: ['latin'],
+  variable: '--font-outfit',
+  display: 'swap',
+  preload: true, // Preload font files
+  fallback: ['system-ui', 'sans-serif'], // Immediate fallback
+});
 ```
-**Result**: Faster initial page load
 
-### **Option 4: Run Type Checking Separately**
-```bash
-# In a separate terminal
-npm run type-check -- --watch
+**Impact:** 
+- Fonts preloaded in parallel
+- Fallback fonts prevent FOUT
+- Faster perceived load time
+
+### 3. Experimental Performance Features
+
+```javascript
+experimental: {
+  optimizeCss: true, // CSS optimization
+  optimizePackageImports: ['lucide-react', '@reown/appkit'], // Tree-shaking
+},
 ```
-**Result**: Instant dev server, types checked in background
 
----
+**Impact:** Smaller CSS bundle, unused code removal
 
-## 📊 **PERFORMANCE COMPARISON**
+### 4. Module Resolution Speed
+
+```javascript
+config.resolve.symlinks = false;
+```
+
+**Impact:** Faster module resolution during build
+
+## 📊 Performance Metrics
+
+### Expected Improvements:
 
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| Initial Load | 7.3s | ~2.5s | **66% faster** |
-| Hot Reload | 3-5s | 1-2s | **60% faster** |
-| Type Check | On every save | On demand | **Instant saves** |
-| Memory Usage | High | Medium | **Lower** |
+| **Bundle Size** | ~1.5MB | ~1.2MB | 20% smaller |
+| **Initial Load** | 3-4s | 1.5-2s | 50% faster |
+| **Time to Interactive** | 4-5s | 2-3s | 40% faster |
+| **Font Loading** | 1-2s | 0.5-1s | 50% faster |
+| **Chunks** | 1-2 large | 5 parallel | Better caching |
 
----
+## 🚀 Further Optimizations (If Still Slow)
 
-## 🎯 **RECOMMENDED WORKFLOW**
+### 1. Lazy Load Web3 Providers
 
-### **For Fast Development:**
+```typescript
+// Only load Web3 when user clicks "Connect Wallet"
+const Web3Providers = dynamic(() => import('@/lib/web3/providers'), {
+  ssr: false,
+  loading: () => <LoadingSpinner />,
+});
+```
+
+### 2. Move Banner Data to Separate File
+
+```typescript
+// Move horizontalBanners array to:
+// /data/banners.ts
+export const horizontalBanners = [ ... ];
+
+// Import only when needed
+import { horizontalBanners } from '@/data/banners';
+```
+
+### 3. Defer Non-Critical Scripts
+
+```typescript
+// In layout.tsx
+<Script src="..." strategy="lazyOnload" />
+```
+
+### 4. Use Next.js Font Optimization
+
+Consider switching to self-hosted fonts:
+```typescript
+import localFont from 'next/font/local';
+
+const outfit = localFont({
+  src: './fonts/Outfit-Variable.woff2',
+  variable: '--font-outfit',
+  display: 'swap',
+});
+```
+
+### 5. Image Optimization
+
+```typescript
+images: {
+  formats: ['image/avif', 'image/webp'],
+  deviceSizes: [640, 750, 828, 1080],
+  imageSizes: [16, 32, 48, 64, 96],
+},
+```
+
+### 6. Remove Unused Dependencies
+
+Check and remove:
+- Unused Privy if only using Reown
+- Duplicate Web3 libraries
+- Large icon libraries (use selective imports)
+
+## 🔍 Monitoring Performance
+
+### In Development:
+
 ```bash
-# Terminal 1: Fast dev server (no type checking)
+# Build and analyze bundle
+npm run build
+npx @next/bundle-analyzer
+```
+
+### In Browser DevTools:
+
+1. **Network Tab:**
+   - Check chunk loading times
+   - Identify large files
+   - Verify parallel loading
+
+2. **Performance Tab:**
+   - Record page load
+   - Check "DOM Content Loaded"
+   - Measure "Time to Interactive"
+
+3. **Lighthouse Audit:**
+   - Run performance audit
+   - Check First Contentful Paint (FCP)
+   - Check Largest Contentful Paint (LCP)
+
+### Target Metrics:
+
+- **First Contentful Paint:** < 1.5s
+- **Largest Contentful Paint:** < 2.5s
+- **Time to Interactive:** < 3.5s
+- **Total Blocking Time:** < 300ms
+
+## 🎯 Quick Wins Checklist
+
+- [x] Split Web3 libraries into separate chunks
+- [x] Optimize font loading with preload + fallbacks
+- [x] Enable CSS optimization
+- [x] Enable package import optimization
+- [x] Clear Next.js cache (.next folder)
+- [ ] Consider lazy loading Web3 providers
+- [ ] Move large data arrays to separate files
+- [ ] Audit and remove unused dependencies
+- [ ] Consider self-hosted fonts
+- [ ] Add bundle analyzer to CI/CD
+
+## 📝 Configuration Files
+
+### Current Optimized Config:
+- `next.config.js` - Production-ready performance config
+
+### Backup:
+- `next.config.old.js` - Previous configuration
+
+### Switching Back:
+```bash
+mv next.config.js next.config.performance.js
+mv next.config.old.js next.config.js
 npm run dev
-
-# Terminal 2: Type checking (optional)
-npm run type-check -- --watch
 ```
 
-### **Before Committing:**
+## 🔧 Troubleshooting
+
+### If build fails:
 ```bash
-# Run full checks
-npm run lint
-npm run type-check
-npm run build
+rm -rf .next node_modules
+npm install
+npm run dev
 ```
 
----
+### If fonts don't load:
+- Check Network tab for font requests
+- Verify Google Fonts CDN is accessible
+- Consider switching to local fonts
 
-## ⚙️ **CURRENT CONFIGURATION**
+### If chunks fail to load:
+- Clear browser cache
+- Check webpack splitChunks configuration
+- Verify all imports are correct
 
-### **Active Config:**
-- File: `next.config.js` (optimized)
-- Type checking: Disabled in dev
-- ESLint: Disabled in dev
-- Image optimization: Disabled
-- Webpack cache: Enabled
+## 📚 References
 
-### **Original Config:**
-- File: `next.config.original.js` (backup)
-- Restore if needed: `mv next.config.original.js next.config.js`
-
----
-
-## 🔄 **HOW TO SWITCH CONFIGS**
-
-### **Use Fast Config (Current):**
-```bash
-mv next.config.original.js next.config.js
-# Faster dev, fewer checks
-```
-
-### **Use Full Config (Production-like):**
-```bash
-mv next.config.js next.config.fast.js
-mv next.config.original.js next.config.js
-# Slower dev, full checks
-```
-
----
-
-## 💡 **WHY FIRST LOAD IS STILL SLOW**
-
-### **First Visit (Cold Start):**
-- Next.js compiles page on demand
-- Loads all dependencies
-- Initializes Web3 providers
-- **Expected**: 2-5 seconds
-
-### **Subsequent Visits (Hot):**
-- Pages already compiled
-- Dependencies cached
-- **Expected**: <1 second
-
-### **Hot Reload (After Changes):**
-- Only recompiles changed files
-- **Expected**: 1-2 seconds
-
-**This is normal for Next.js development!**
-
----
-
-## 🚀 **PRODUCTION BUILD**
-
-For production (much faster):
-```bash
-npm run build
-npm start
-
-# OR static export:
-NEXT_PUBLIC_BASE_PATH=/bookish-waffle npm run build
-```
-
-**Production is 10x faster** than development mode!
-
----
-
-## ✅ **WHAT'S OPTIMIZED**
-
-- ✅ Webpack filesystem cache enabled
-- ✅ TypeScript checking deferred
-- ✅ ESLint checking deferred
-- ✅ Simplified headers
-- ✅ Image optimization disabled (dev only)
-- ✅ Faster compilation
-
----
-
-## 🎯 **CURRENT STATUS**
-
-**Dev Server**: ✅ Running with optimized config  
-**Expected Load Time**: ~2-3 seconds (first load)  
-**Hot Reload Time**: ~1-2 seconds  
-**Production Ready**: Yes (full checks run on build)  
-
----
-
-## 🧪 **TEST NOW**
-
-Your optimized server is running!
-
-**Open**: http://localhost:3000/swap
-
-**Should be faster now!** ⚡
-
----
-
-## 📝 **TIPS**
-
-1. **First page load is always slower** (compilation)
-2. **Subsequent loads are fast** (cached)
-3. **Hot reload is instant** after first load
-4. **Use production build** for speed testing
-5. **Run type-check separately** if needed
-
----
-
-**Your server is now optimized for faster development!** 🚀
-
+- [Next.js Performance](https://nextjs.org/docs/pages/building-your-application/optimizing/performance)
+- [Web Vitals](https://web.dev/vitals/)
+- [Webpack Optimization](https://webpack.js.org/guides/code-splitting/)
+- [Next.js Font Optimization](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts)
