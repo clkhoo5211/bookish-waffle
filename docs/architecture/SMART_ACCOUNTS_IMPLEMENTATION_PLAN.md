@@ -372,6 +372,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
   
   const privyAppId = process.env.NEXT_PUBLIC_PRIVY_APP_ID!;
 
+{% raw %}
   return (
     <PrivyProvider
       appId={privyAppId}
@@ -397,6 +398,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
           termsAndConditionsUrl: '/terms',
           privacyPolicyUrl: '/privacy',
         },
+{% endraw %}
       }}
     >
       <WagmiProvider config={wagmiAdapter.wagmiConfig}>

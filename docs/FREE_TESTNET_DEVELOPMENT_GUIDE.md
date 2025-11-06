@@ -201,6 +201,7 @@ NEXT_PUBLIC_PIMLICO_BSC_TESTNET_URL=https://api.pimlico.io/v2/97/rpc
 
 #### **Privy Testnet Configuration:**
 
+{% raw %}
 ```typescript
 // lib/web3/providers.tsx
 <PrivyProvider
@@ -214,6 +215,7 @@ NEXT_PUBLIC_PIMLICO_BSC_TESTNET_URL=https://api.pimlico.io/v2/97/rpc
   }}
 >
 ```
+{% endraw %}
 
 **Cost**: **FREE** for testnet testing ✅
 

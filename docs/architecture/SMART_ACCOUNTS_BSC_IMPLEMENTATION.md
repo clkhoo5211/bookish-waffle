@@ -223,6 +223,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
     return coreProviders;
   }
 
+{% raw %}
   return (
     <PrivyProvider
       appId={privyAppId}
@@ -247,6 +248,7 @@ export function Web3Providers({ children }: { children: React.ReactNode }) {
       }}
     >
       {coreProviders}
+{% endraw %}
     </PrivyProvider>
   );
 }
