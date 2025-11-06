@@ -3,9 +3,11 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { useAppKit } from '@reown/appkit/react';
+import { useChainId } from 'wagmi';
 
 interface ReownSwapButtonProps {
   toToken?: string; // Token symbol to swap TO (e.g., 'BNB', 'USDT')
+  toTokenAddress?: string; // Optional: specific token address
   className?: string;
 }
 
@@ -14,33 +16,32 @@ interface ReownSwapButtonProps {
  * Opens Reown AppKit swap modal for exchanging tokens
  * Pre-configures the "TO" token so users can swap FROM any token they have
  */
-export function ReownSwapButton({ toToken, className = '' }: ReownSwapButtonProps) {
+export function ReownSwapButton({ toToken, toTokenAddress, className = '' }: ReownSwapButtonProps) {
   const { open: openAppKit } = useAppKit();
+  const chainId = useChainId();
 
   const handleSwap = () => {
-    // Map common token names to their standard symbols
-    const tokenMap: { [key: string]: string } = {
-      'BNB': 'BNB',
-      'USDT': 'USDT',
-      'USDC': 'USDC',
-      'USD1': 'USDC', // Map USD1 to USDC for swap compatibility
-    };
-
-    const outputToken = toToken ? (tokenMap[toToken] || toToken) : undefined;
-
-    // Open Reown swap view with pre-configured "TO" token
-    // Using correct parameter structure from Reown documentation
-    if (outputToken) {
-      openAppKit({ 
-        view: 'Swap',
-        params: {
-          defaultOutputToken: outputToken,
-          defaultCryptoCurrency: outputToken,
-        }
-      });
-    } else {
-      openAppKit({ view: 'Swap' });
+    // Try multiple parameter variations to find what works
+    const swapConfig: any = { view: 'Swap' };
+    
+    if (toToken || toTokenAddress) {
+      // Try all possible parameter names based on different Reown versions
+      swapConfig.params = {
+        toToken: toToken,
+        toTokenAddress: toTokenAddress,
+        defaultToToken: toToken,
+        defaultOutputToken: toToken,
+        defaultCryptoCurrency: toToken,
+        outputToken: toToken,
+      };
+      
+      // Also try at top level (some versions use this)
+      swapConfig.toToken = toToken;
+      swapConfig.toTokenAddress = toTokenAddress;
     }
+
+    console.log('Opening swap with config:', swapConfig);
+    openAppKit(swapConfig);
   };
 
   return (
