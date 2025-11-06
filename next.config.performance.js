@@ -140,7 +140,7 @@ const nextConfig = {
   
   // Enable experimental features for better performance
   experimental: {
-    // optimizeCss: true, // Disabled - requires 'critters' package
+    optimizeCss: true, // Enable CSS optimization
     optimizePackageImports: ['lucide-react', '@reown/appkit'], // Tree-shake these packages
   },
 };
