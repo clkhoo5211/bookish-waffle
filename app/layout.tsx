@@ -5,6 +5,7 @@ import { Web3Providers } from '@/lib/web3/providers';
 import { Header } from '@/components/layout/Header';
 import { NetworkChecker } from '@/components/wallet/NetworkChecker';
 import { CookieConsentBanner } from '@/components/compliance/CookieConsentBanner';
+import { AnalyticsSuppress } from '@/components/utils/AnalyticsSuppress';
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -27,8 +28,10 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
+  maximumScale: 5, // Allow zoom for accessibility
+  userScalable: true,
   themeColor: '#00a19c',
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
@@ -38,11 +41,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${outfit.variable} ${inter.variable}`}>
-      <body className="flex flex-col min-h-screen bg-[#f1f5f9] font-sans antialiased">
+      <body className="bg-[#f1f5f9] font-sans antialiased">
+        <AnalyticsSuppress />
         <Web3Providers>
           <NetworkChecker />
           <Header />
-          <main className="flex-grow">{children}</main>
+          <main>{children}</main>
           {/* Footer moved to home page only */}
           {/* Disabled for faster dev loading */}
           {/* <CookieConsentBanner /> */}

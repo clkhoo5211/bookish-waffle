@@ -4,10 +4,15 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { RefreshCw, CheckCircle, AlertCircle, Gift } from 'lucide-react';
+import { RefreshCw, CheckCircle, AlertCircle, Gift, CreditCard, Wallet, Lock } from 'lucide-react';
+import { OnRampButton } from '@/components/onramp/OnRampButton';
+import { MintTestTokens } from '@/components/faucet/MintTestTokens';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
+import { useAppKit } from '@reown/appkit/react';
 import { parseEther, parseUnits, formatEther } from 'viem';
+import { useReownLogin } from '@/hooks/useReownLogin';
+import { bsc, bscTestnet, sepolia } from 'viem/chains';
 
 // Get basePath for assets (GitHub Pages needs this)
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH || '';
@@ -20,10 +25,21 @@ const swapTiers = [
 
 // Contract addresses from environment variables
 const TOKEN_ADDRESSES = {
-  USDT: (process.env.NEXT_PUBLIC_USDT_TOKEN_ADDRESS || '0x55d398326f99059fF775485246999027B3197955') as `0x${string}`,
-  USDC_TESTNET: (process.env.NEXT_PUBLIC_USDC_TESTNET_ADDRESS || '0x31873b5804bABE258d6ea008f55e08DD00b7d51E') as `0x${string}`,
+  // BSC Mainnet USDT
+  USDT_BSC: '0x55d398326f99059fF775485246999027B3197955' as `0x${string}`,
+  // BSC Testnet USDC
+  USDC_BSC_TESTNET: '0x31873b5804bABE258d6ea008f55e08DD00b7d51E' as `0x${string}`,
+  // Pimlico Test USDT on Sepolia
+  USDT_SEPOLIA: (process.env.NEXT_PUBLIC_USDT_TOKEN_ADDRESS || '0xd077a400968890eacc75cdc901f0356c943e4fdb') as `0x${string}`,
   USD1: (process.env.NEXT_PUBLIC_USD1_TOKEN_ADDRESS || '0x0E09FaBB73Bd3Ade0a17ECC321fD13a19e81cE82') as `0x${string}`,
   RVM_CONTRACT: (process.env.NEXT_PUBLIC_RVM_SWAP_CONTRACT || '0x0000000000000000000000000000000000000000') as `0x${string}`
+};
+
+// Get USDT address based on network
+const getUSDTAddress = (chainId: number) => {
+  if (chainId === sepolia.id) return TOKEN_ADDRESSES.USDT_SEPOLIA;
+  if (chainId === bscTestnet.id) return TOKEN_ADDRESSES.USDC_BSC_TESTNET;
+  return TOKEN_ADDRESSES.USDT_BSC;
 };
 
 // ERC-20 ABI for approve function
@@ -51,19 +67,21 @@ const ERC20_ABI = [
 ] as const;
 
 type SwapStep = 'idle' | 'checking' | 'approving' | 'swapping' | 'success' | 'error';
+type BuyOption = 'balance' | 'onramp' | 'faucet';
 
 export default function SwapPage() {
   const router = useRouter();
   const { address, isConnected } = useAccount();
   const chainId = useChainId();
+  const { open: openAppKit } = useAppKit();
+  const { isReownConnected, requiresReownLogin } = useReownLogin();
+  
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
   const [selectedCurrency, setSelectedCurrency] = useState<'BNB' | 'USDT' | 'USD1'>('BNB');
   const [swapStep, setSwapStep] = useState<SwapStep>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [needsApproval, setNeedsApproval] = useState(false);
-  const [isClaiming, setIsClaiming] = useState(false);
-  const [claimSuccess, setClaimSuccess] = useState(false);
-  const [claimError, setClaimError] = useState<string>('');
+  const [buyOption, setBuyOption] = useState<BuyOption | null>(null);
+  const [showBuyModal, setShowBuyModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -71,38 +89,47 @@ export default function SwapPage() {
   }, []);
   
   // Get balances
-  const { data: bnbBalance } = useBalance({ address });
+  const { data: bnbBalance, refetch: refetchBNB } = useBalance({ address });
   
-  // For USDT: Use USDC on testnet (97), USDT on mainnet (56)
-  const { data: usdtBalance } = useBalance({ 
+  // USDT - dynamic based on network
+  const { data: usdtBalance, refetch: refetchUSDT } = useBalance({ 
     address,
-    token: chainId === 97 ? TOKEN_ADDRESSES.USDC_TESTNET : TOKEN_ADDRESSES.USDT
+    token: getUSDTAddress(chainId)
   });
   
-  const { data: usd1Balance } = useBalance({ 
+  const { data: usd1Balance, refetch: refetchUSD1 } = useBalance({ 
     address,
     token: TOKEN_ADDRESSES.USD1
   });
+
+  // Refetch all balances
+  const refetchBalances = () => {
+    refetchBNB();
+    refetchUSDT();
+    refetchUSD1();
+  };
 
   // Contract write hooks
   const { 
     writeContract: approveToken,
     data: approveHash,
-    isPending: isApprovePending
+    isPending: isApprovePending,
+    error: approveError
   } = useWriteContract();
 
   const { 
     writeContract: executeSwap,
     data: swapHash,
-    isPending: isSwapPending
+    isPending: isSwapPending,
+    error: swapError
   } = useWriteContract();
 
   // Wait for transactions
-  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isApproveLoading, isSuccess: isApproveSuccess, isError: isApproveError } = useWaitForTransactionReceipt({
     hash: approveHash,
   });
 
-  const { isLoading: isSwapLoading, isSuccess: isSwapSuccess } = useWaitForTransactionReceipt({
+  const { isLoading: isSwapLoading, isSuccess: isSwapSuccess, isError: isSwapError } = useWaitForTransactionReceipt({
     hash: swapHash,
   });
 
@@ -110,9 +137,6 @@ export default function SwapPage() {
   const getRequiredAmount = () => {
     if (selectedTier === null) return '0';
     const tier = swapTiers[selectedTier];
-    // Simplified pricing: 1 RVM = 0.01 USD equivalent
-    // For BNB: assume 1 BNB = $300, so 100 USD = 0.33 BNB
-    // For USDT/CAKE: direct USD value
     
     switch (selectedCurrency) {
       case 'BNB':
@@ -125,9 +149,53 @@ export default function SwapPage() {
     }
   };
 
+  // Get current balance for selected currency
+  const getCurrentBalance = () => {
+    switch (selectedCurrency) {
+      case 'BNB':
+        return bnbBalance ? parseFloat(formatEther(bnbBalance.value)) : 0;
+      case 'USDT':
+        // Pimlico USDT on Sepolia uses 6 decimals, others use 18
+        if (chainId === sepolia.id && usdtBalance) {
+          return parseFloat((Number(usdtBalance.value) / 1e6).toFixed(2));
+        }
+        return usdtBalance ? parseFloat(formatEther(usdtBalance.value)) : 0;
+      case 'USD1':
+        return usd1Balance ? parseFloat(formatEther(usd1Balance.value)) : 0;
+      default:
+        return 0;
+    }
+  };
+
+  // Check if balance is sufficient
+  const isBalanceSufficient = () => {
+    const currentBalance = getCurrentBalance();
+    const requiredAmount = parseFloat(getRequiredAmount());
+    return currentBalance >= requiredAmount;
+  };
+
+  // Handle login requirement
+  const handleLoginRequired = () => {
+    if (requiresReownLogin) {
+      openAppKit();
+      return true;
+    }
+    return false;
+  };
+
+  // Handle swap with proper flow
   const handleSwap = async () => {
+    // Step 1: Check Reown login
     if (!isConnected || !address) {
       setErrorMessage('Please connect your wallet first');
+      if (handleLoginRequired()) return;
+      setSwapStep('error');
+      return;
+    }
+
+    if (!isReownConnected) {
+      setErrorMessage('Please login using Reown (email/social login) to use this feature');
+      openAppKit();
       setSwapStep('error');
       return;
     }
@@ -142,43 +210,21 @@ export default function SwapPage() {
       setSwapStep('checking');
       setErrorMessage('');
 
-      const requiredAmount = getRequiredAmount();
-      
-      // Check balance
-      const currentBalance = selectedCurrency === 'BNB' 
-        ? bnbBalance 
-        : selectedCurrency === 'USDT' 
-        ? usdtBalance 
-        : usd1Balance;
+      const requiredAmount = parseFloat(getRequiredAmount());
+      const currentBalance = getCurrentBalance();
 
-      if (!currentBalance || parseFloat(formatEther(currentBalance.value)) < parseFloat(requiredAmount)) {
-        const displayCurrency = selectedCurrency === 'USDT' && chainId === 97 ? 'USDC' : selectedCurrency;
-        setErrorMessage(`Insufficient ${displayCurrency} balance`);
-        setSwapStep('error');
+      // Step 2: Check balance
+      if (currentBalance < requiredAmount) {
+        // Insufficient balance - show buy options
+        setShowBuyModal(true);
+        setBuyOption('onramp'); // Default to on-ramp
+        setSwapStep('idle');
         return;
       }
 
-      // For ERC-20 tokens, check and handle approval
-      if (selectedCurrency === 'USDT' || selectedCurrency === 'USD1') {
-        setSwapStep('approving');
-        
-        // Use USDC on testnet, USDT on mainnet
-        const tokenAddress = selectedCurrency === 'USDT' 
-          ? (chainId === 97 ? TOKEN_ADDRESSES.USDC_TESTNET : TOKEN_ADDRESSES.USDT)
-          : TOKEN_ADDRESSES.USD1;
-        const amountToApprove = parseUnits(requiredAmount, 18); // Assuming 18 decimals
-        
-        // Approve the RVM contract to spend tokens
-        approveToken({
-          address: tokenAddress,
-          abi: ERC20_ABI,
-          functionName: 'approve',
-          args: [TOKEN_ADDRESSES.RVM_CONTRACT, amountToApprove],
-        });
-      } else {
-        // For BNB, proceed directly to swap
-        performSwap();
-      }
+      // Step 3: Balance sufficient - proceed with swap
+      await performSwap();
+
     } catch (error: any) {
       console.error('Swap error:', error);
       setErrorMessage(error.message || 'Transaction failed');
@@ -189,28 +235,43 @@ export default function SwapPage() {
   const performSwap = async () => {
     setSwapStep('swapping');
     
-    // Mock swap transaction (replace with actual RVM contract call)
-    // This would call the RVM contract's swap function
     try {
       const tier = swapTiers[selectedTier!];
       const requiredAmount = getRequiredAmount();
       
-      // For demo purposes, simulate a successful swap
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // In production, you would call:
-      // executeSwap({
-      //   address: TOKEN_ADDRESSES.RVM_CONTRACT,
-      //   abi: RVM_CONTRACT_ABI,
-      //   functionName: 'swap',
-      //   args: [selectedCurrency, parseUnits(requiredAmount, 18), tier.total],
-      //   value: selectedCurrency === 'BNB' ? parseEther(requiredAmount) : undefined
-      // });
-      
-      setSwapStep('success');
-      setTimeout(() => {
-        router.push('/');
-      }, 2000);
+      // For ERC-20 tokens, check and handle approval
+      if (selectedCurrency === 'USDT' || selectedCurrency === 'USD1') {
+        setSwapStep('approving');
+        
+        const tokenAddress = selectedCurrency === 'USDT' 
+          ? getUSDTAddress(chainId)
+          : TOKEN_ADDRESSES.USD1;
+        const amountToApprove = parseUnits(requiredAmount, 18);
+        
+        approveToken({
+          address: tokenAddress,
+          abi: ERC20_ABI,
+          functionName: 'approve',
+          args: [TOKEN_ADDRESSES.RVM_CONTRACT, amountToApprove],
+        });
+      } else {
+        // For BNB, proceed directly to swap
+        // In production, you would call:
+        // executeSwap({
+        //   address: TOKEN_ADDRESSES.RVM_CONTRACT,
+        //   abi: RVM_CONTRACT_ABI,
+        //   functionName: 'swap',
+        //   args: [selectedCurrency, parseUnits(requiredAmount, 18), tier.total],
+        //   value: parseEther(requiredAmount)
+        // });
+        
+        // Mock for now
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        setSwapStep('success');
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+      }
     } catch (error: any) {
       console.error('Swap execution error:', error);
       setErrorMessage(error.message || 'Swap failed');
@@ -226,7 +287,49 @@ export default function SwapPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isApproveSuccess, swapStep]);
 
+  // Effect to handle approval error/cancellation
+  useEffect(() => {
+    if (approveError || isApproveError) {
+      console.log('Approval cancelled or failed:', approveError);
+      setErrorMessage('Transaction cancelled or failed. Please try again.');
+      setSwapStep('error');
+      setTimeout(() => {
+        setSwapStep('idle');
+        setErrorMessage('');
+      }, 3000);
+    }
+  }, [approveError, isApproveError]);
+
+  // Effect to handle swap error/cancellation
+  useEffect(() => {
+    if (swapError || isSwapError) {
+      console.log('Swap cancelled or failed:', swapError);
+      setErrorMessage('Transaction cancelled or failed. Please try again.');
+      setSwapStep('error');
+      setTimeout(() => {
+        setSwapStep('idle');
+        setErrorMessage('');
+      }, 3000);
+    }
+  }, [swapError, isSwapError]);
+
+  // Handle on-ramp purchase
+  const handleOnRamp = () => {
+    if (!isReownConnected) {
+      openAppKit();
+      return;
+    }
+    
+    // Open Reown on-ramp modal
+    // The OnRampButton component handles the modal opening
+    setShowBuyModal(false);
+  };
+
   const getButtonText = () => {
+    if (!isReownConnected) {
+      return 'Login with Reown to Continue';
+    }
+    
     switch (swapStep) {
       case 'checking':
         return 'Checking Balance...';
@@ -245,86 +348,6 @@ export default function SwapPage() {
 
   const isLoading = swapStep === 'checking' || swapStep === 'approving' || swapStep === 'swapping';
   
-  // Claim USDC from testnet faucet
-  const handleClaimUSDC = async () => {
-    if (!isConnected || !address) {
-      setClaimError('Please connect your wallet first');
-      return;
-    }
-
-    if (chainId !== 97) {
-      setClaimError('Please switch to BSC Testnet (Chain ID 97) to claim testnet USDC');
-      return;
-    }
-
-    setIsClaiming(true);
-    setClaimError('');
-    setClaimSuccess(false);
-
-    try {
-      // Generate current timestamp for request freshness
-      const timestamp = Date.now().toString();
-      
-      const response = await fetch('https://testnet-operator-evm.orderly.org/v1/faucet/usdc', {
-        method: 'POST',
-        headers: {
-          // Standard headers
-          'Accept': '*/*',
-          'Accept-Encoding': 'gzip, deflate, br, zstd',
-          'Accept-Language': 'zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7,zh-TW;q=0.6,ms;q=0.5,ja;q=0.4,ru;q=0.3,th;q=0.2,fr;q=0.1',
-          'Cache-Control': 'no-cache',
-          'Content-Type': 'application/json;charset=utf-8',
-          'Pragma': 'no-cache',
-          'Priority': 'u=1, i',
-          
-          // Orderly Network authentication headers
-          'orderly-account-id': '0xdba37106030b22d10e10dbf65d0ae3c66d34ce71e998f6d008a43db6d560e25e',
-          'orderly-key': 'ed25519:7CcAaf8vEnBKcEREzvSx6PuhPKpKmYVLW98hyncJztma',
-          'orderly-signature': 'PlzKcnhelgwD-4WHD1QNpzdW216SlEMlBaNeG8mIX-cjvBEJbtRzYdHEGp_s9YXqrpep46nImiS4UMYAVIUiBA==',
-          'orderly-timestamp': timestamp, // ✅ Dynamic timestamp for each request
-          
-          // CORS headers
-          'Origin': 'https://dex.orderly.network',
-          'Referer': 'https://dex.orderly.network/',
-          
-          // Note: The following headers are automatically set by the browser and CANNOT be manually set:
-          // - :authority (HTTP/2 pseudo-header, derived from URL)
-          // - :method (HTTP/2 pseudo-header, derived from method: 'POST')
-          // - :path (HTTP/2 pseudo-header, derived from URL path)
-          // - :scheme (HTTP/2 pseudo-header, always 'https' for HTTPS URLs)
-          // - Content-Length (automatically calculated from body)
-          // - sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform (browser-controlled, forbidden to set)
-          // - sec-fetch-dest, sec-fetch-mode, sec-fetch-site (browser-controlled, forbidden to set)
-          // - User-Agent (browser-controlled, forbidden to set)
-        },
-        body: JSON.stringify({
-          chain_id: '97',
-          user_address: address,
-          broker_id: 'demo'
-        })
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Faucet request failed: ${response.status}`);
-      }
-
-      const data = await response.json();
-      setClaimSuccess(true);
-      setTimeout(() => setClaimSuccess(false), 5000); // Hide success message after 5 seconds
-      
-      // Refresh balances
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-    } catch (error: any) {
-      console.error('Claim USDC error:', error);
-      setClaimError(error.message || 'Failed to claim USDC. Please try again.');
-    } finally {
-      setIsClaiming(false);
-    }
-  };
-
   if (!mounted) {
     return (
       <div className="min-h-screen bg-white pb-20 flex items-center justify-center">
@@ -336,9 +359,43 @@ export default function SwapPage() {
     );
   }
 
+  // Reown login required screen
+  if (!isReownConnected || !isConnected) {
+    return (
+      <>
+        <div className="min-h-screen bg-white pb-20 flex items-center justify-center">
+          <div className="max-w-md mx-auto px-4">
+            <div className="text-center mb-8">
+              <Lock className="w-16 h-16 text-teal-500 mx-auto mb-4" />
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">Login Required</h1>
+              <p className="text-gray-600 mb-6">
+                Please login with Reown to access swap, on-ramp, and faucet features.
+              </p>
+              <button
+                onClick={() => openAppKit()}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white py-4 rounded-full font-bold text-lg flex items-center justify-center gap-2 transition-all"
+              >
+                <Wallet className="w-5 h-5" />
+                Login with Reown
+              </button>
+              <p className="text-sm text-gray-500 mt-4">
+                Login with email, Google, Apple, X, or Discord to continue
+              </p>
+            </div>
+          </div>
+        </div>
+        <BottomNav />
+      </>
+    );
+  }
+
+  const currentBalance = getCurrentBalance();
+  const requiredAmount = parseFloat(getRequiredAmount());
+  const balanceSufficient = isBalanceSufficient();
+
   return (
     <>
-      <div className="min-h-screen bg-white pb-20">
+      <div className="bg-white pb-20">
         <div className="max-w-md mx-auto">
           <div className="p-4 border-b border-gray-100">
             <div className="flex justify-between items-center">
@@ -350,6 +407,7 @@ export default function SwapPage() {
               )}
             </div>
           </div>
+          
           <div className="relative h-48 bg-gradient-to-r from-gray-800 to-gray-600 overflow-hidden">
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center text-white">
@@ -358,6 +416,8 @@ export default function SwapPage() {
               </div>
             </div>
           </div>
+
+          {/* Swap Tiers */}
           <div className="p-4 space-y-3">
             {swapTiers.map((tier, index) => (
               <button
@@ -383,99 +443,193 @@ export default function SwapPage() {
             ))}
           </div>
 
+          {/* Network Warning for USDT */}
+          {isConnected && selectedCurrency === 'USDT' && chainId !== sepolia.id && chainId !== bscTestnet.id && chainId !== bsc.id && (
+            <div className="px-4 mb-4">
+              <div className="bg-orange-50 border-2 border-orange-300 rounded-2xl p-4">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h3 className="font-bold text-orange-900 mb-2">Wrong Network for USDT</h3>
+                    <p className="text-sm text-orange-800 mb-3">
+                      Smart Accounts are per-network. To use Sepolia USDT:
+                    </p>
+                    <div className="space-y-2">
+                      <button
+                        onClick={() => openAppKit({ view: 'Networks' })}
+                        className="w-full bg-orange-600 text-white px-4 py-2 rounded-xl font-semibold text-sm hover:bg-orange-700 transition-all flex items-center justify-center gap-2"
+                      >
+                        🌐 Open Network Selector
+                      </button>
+                    </div>
+                    <div className="bg-white rounded-lg p-3 mt-3 text-xs text-orange-800">
+                      <p className="font-semibold mb-1">📝 How to switch:</p>
+                      <p>1. Click button above</p>
+                      <p>2. Select &ldquo;Sepolia&rdquo; network</p>
+                      <p>3. Disconnect current account</p>
+                      <p>4. Login with Google again on Sepolia</p>
+                      <p className="mt-2 text-green-700 font-semibold">
+                        ✅ You&apos;ll see your 1,000 USDT on Sepolia
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Balance Display */}
           {isConnected && address && (
             <div className="px-4 mb-4">
-              <div className="bg-gray-50 rounded-2xl p-4">
+              <div className={`rounded-2xl p-4 ${
+                balanceSufficient ? 'bg-green-50 border border-green-200' : 'bg-yellow-50 border border-yellow-200'
+              }`}>
                 <div className="flex justify-between items-center mb-2">
                   <p className="text-sm text-gray-600">Your Balance:</p>
                   <p className="text-sm font-bold text-gray-900">
                     {selectedCurrency === 'BNB' && bnbBalance 
                       ? `${parseFloat(formatEther(bnbBalance.value)).toFixed(4)} BNB`
                       : selectedCurrency === 'USDT' && usdtBalance
-                      ? `${parseFloat(formatEther(usdtBalance.value)).toFixed(2)} ${chainId === 97 ? 'USDC' : 'USDT'}`
+                      ? chainId === sepolia.id 
+                        ? `${(Number(usdtBalance.value) / 1e6).toFixed(2)} USDT (Sepolia)`
+                        : `${parseFloat(formatEther(usdtBalance.value)).toFixed(2)} USDT`
                       : selectedCurrency === 'USD1' && usd1Balance
                       ? `${parseFloat(formatEther(usd1Balance.value)).toFixed(2)} USD1`
-                      : 'Loading...'}
+                      : '0.00'}
                   </p>
                 </div>
                 {selectedTier !== null && (
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm text-gray-600">Required:</p>
-                    <p className="text-sm font-bold text-teal-600">
-                      {getRequiredAmount()} {selectedCurrency === 'USDT' && chainId === 97 ? 'USDC' : selectedCurrency}
-                    </p>
-                  </div>
+                  <>
+                    <div className="flex justify-between items-center mb-2">
+                      <p className="text-sm text-gray-600">Required:</p>
+                      <p className={`text-sm font-bold ${
+                        balanceSufficient ? 'text-green-600' : 'text-yellow-600'
+                      }`}>
+                        {getRequiredAmount()} {selectedCurrency}
+                      </p>
+                    </div>
+                    {!balanceSufficient && (
+                      <div className="mt-2 p-2 bg-white rounded-lg">
+                        <p className="text-xs text-yellow-700">
+                          ⚠️ Insufficient balance. You need {requiredAmount - currentBalance} more {selectedCurrency}
+                        </p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             </div>
           )}
 
-          {/* Testnet Faucet - Claim Free USDC */}
-          {isConnected && address && chainId === 97 && (
+          {/* Mint Test Tokens (BSC Testnet Only) */}
+          {isConnected && address && chainId === bscTestnet.id && (
+            <div className="px-4 mb-4">
+              <MintTestTokens />
+            </div>
+          )}
+
+          {/* Faucet Section (Testnet Only) */}
+          {isConnected && address && (chainId === bscTestnet.id || chainId === sepolia.id) && (
             <div className="px-4 mb-4">
               <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-2 border-purple-200 rounded-2xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <Gift className="w-5 h-5 text-purple-600" />
-                    <h3 className="font-bold text-gray-900">Testnet Faucet</h3>
+                    <h3 className="font-bold text-gray-900">Get Free Test Tokens</h3>
                   </div>
                   <span className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">
                     BSC Testnet Only
                   </span>
                 </div>
                 <p className="text-xs text-gray-700 mb-3">
-                  Claim free USDC for testing on BSC Testnet
+                  Multiple faucets available - choose any to get free test tokens
                 </p>
-                <button
-                  onClick={handleClaimUSDC}
-                  disabled={isClaiming}
-                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2.5 rounded-xl font-semibold text-sm hover:from-purple-600 hover:to-blue-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-md"
-                >
-                  {isClaiming ? (
-                    <>
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      Claiming...
-                    </>
-                  ) : (
-                    <>
-                      <Gift className="w-4 h-4" />
-                      Claim Free USDC
-                    </>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Claim Success Message */}
-          {claimSuccess && (
-            <div className="px-4 mb-4">
-              <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
-                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-green-900 mb-1">USDC Claimed Successfully!</p>
-                  <p className="text-xs text-green-700">Check your wallet balance. Page will refresh in 2 seconds...</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Claim Error Message */}
-          {claimError && (
-            <div className="px-4 mb-4">
-              <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-red-900 mb-1">Faucet Claim Failed</p>
-                  <p className="text-xs text-red-700">{claimError}</p>
-                  <button
-                    onClick={() => setClaimError('')}
-                    className="text-xs text-red-600 hover:underline mt-2"
+                
+                <div className="space-y-2 mb-3">
+                  <a
+                    href="https://www.bnbchain.org/en/testnet-faucet"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-white border-2 border-purple-200 text-purple-700 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-purple-50 transition-all flex items-center justify-center gap-2"
                   >
-                    Dismiss
-                  </button>
+                    🏛️ BNB Chain Official Faucet
+                  </a>
+                  <a
+                    href="https://faucet.quicknode.com/binance/bnb-testnet"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-white border-2 border-blue-200 text-blue-700 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-blue-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    ⚡ QuickNode Faucet
+                  </a>
+                  <a
+                    href="https://testnet.binance.org/faucet-smart"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full bg-white border-2 border-green-200 text-green-700 px-4 py-2 rounded-xl font-semibold text-sm hover:bg-green-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    🌐 Testnet.Binance.org
+                  </a>
                 </div>
+
+                <div className="bg-white rounded-lg p-2 border border-purple-100">
+                  <p className="text-xs text-gray-600 mb-1">Your Address (copy this):</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-xs font-mono text-gray-900 truncate flex-1">
+                      {address}
+                    </p>
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(address);
+                        alert('Address copied!');
+                      }}
+                      className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded font-semibold hover:bg-purple-200 transition-colors"
+                    >
+                      Copy
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Buy Modal (Insufficient Balance) */}
+          {showBuyModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+                <h3 className="text-xl font-bold text-gray-900 mb-4">Insufficient Balance</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  You need {requiredAmount} {selectedCurrency} but only have {currentBalance.toFixed(4)}.
+                </p>
+                
+                <div className="space-y-3 mb-4">
+                  <OnRampButton 
+                    token={selectedCurrency}
+                    amount={requiredAmount.toString()}
+                  />
+                  
+                  {(chainId === bscTestnet.id || chainId === sepolia.id) && (
+                    <button
+                      onClick={() => {
+                        setBuyOption('faucet');
+                        setShowBuyModal(false);
+                        // Scroll to faucet section
+                        document.getElementById('faucet-section')?.scrollIntoView({ behavior: 'smooth' });
+                      }}
+                      className="w-full bg-purple-500 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-purple-600 transition-all"
+                    >
+                      <Gift className="w-5 h-5" />
+                      Get Free Test Tokens (Testnet)
+                    </button>
+                  )}
+                </div>
+                
+                <button
+                  onClick={() => setShowBuyModal(false)}
+                  className="w-full border border-gray-300 text-gray-700 px-4 py-2 rounded-xl font-semibold hover:bg-gray-50 transition-all"
+                >
+                  Cancel
+                </button>
               </div>
             </div>
           )}
@@ -511,7 +665,7 @@ export default function SwapPage() {
             <div className="px-4 mb-4">
               <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
                 <p className="text-xs text-blue-900 mb-2">
-                  <strong>Step 1 of 2:</strong> Approve RVM contract to spend your {selectedCurrency === 'USDT' && chainId === 97 ? 'USDC' : selectedCurrency}
+                  <strong>Step 1 of 2:</strong> Approve RVM contract to spend your {selectedCurrency}
                 </p>
                 <p className="text-xs text-blue-700">
                   This is a one-time approval. You&apos;ll need to confirm in your wallet.
@@ -530,6 +684,8 @@ export default function SwapPage() {
                   ? 'bg-green-500 hover:bg-green-600' 
                   : swapStep === 'error'
                   ? 'bg-red-500 hover:bg-red-600'
+                  : !isReownConnected
+                  ? 'bg-gray-400 hover:bg-gray-500'
                   : 'bg-teal-500 hover:bg-teal-600'
               } text-white`}
             >
@@ -555,13 +711,9 @@ export default function SwapPage() {
                 </>
               )}
             </button>
-            
-            {!isConnected && (
-              <p className="text-center text-sm text-red-600 mt-2">
-                Please connect your wallet to continue
-              </p>
-            )}
           </div>
+
+          {/* Currency Selection */}
           <div className="px-4 mb-6">
             <p className="text-sm font-semibold text-gray-700 mb-3">Swap with</p>
             <div className="flex gap-3">
@@ -571,8 +723,14 @@ export default function SwapPage() {
                   selectedCurrency === 'BNB' ? 'bg-gray-900 border-2 border-teal-500' : 'bg-gray-50 border-2 border-gray-200'
                 }`}
               >
-                <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center bg-yellow-400">
-                  <Image src={`${basePath}/logos/bnb.png`} alt="BNB" width={48} height={48} className="rounded-full" />
+                <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center overflow-hidden">
+                  <Image 
+                    src={`${basePath}/logos/bnb.png`} 
+                    alt="BNB" 
+                    width={48} 
+                    height={48} 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <p className={`font-semibold ${selectedCurrency === 'BNB' ? 'text-white' : 'text-gray-900'}`}>BNB</p>
               </button>
@@ -582,8 +740,14 @@ export default function SwapPage() {
                   selectedCurrency === 'USDT' ? 'bg-gray-900 border-2 border-teal-500' : 'bg-gray-50 border-2 border-gray-200'
                 }`}
               >
-                <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center bg-teal-500">
-                  <Image src={`${basePath}/logos/usdt.png`} alt="USDT" width={48} height={48} className="rounded-full" />
+                <div className="w-12 h-12 rounded-full mx-auto mb-2 flex items-center justify-center overflow-hidden">
+                  <Image 
+                    src={`${basePath}/logos/usdt.png`} 
+                    alt="USDT" 
+                    width={48} 
+                    height={48}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <p className={`font-semibold ${selectedCurrency === 'USDT' ? 'text-white' : 'text-gray-900'}`}>USDT</p>
               </button>
@@ -600,7 +764,9 @@ export default function SwapPage() {
               </button>
             </div>
           </div>
-          <div className="px-4 mb-6">
+
+          {/* FAQ Section */}
+          <div className="px-4 mb-6" id="faucet-section">
             <h3 className="font-bold text-gray-900 mb-4">Frequent Ask Question</h3>
             <div className="space-y-3">
               <div className="bg-gray-50 rounded-2xl p-4">

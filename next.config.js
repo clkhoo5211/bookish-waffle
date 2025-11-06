@@ -1,42 +1,57 @@
 /** @type {import('next').NextConfig} */
-// Unified configuration for both local dev and GitHub Pages deployment
+// OPTIMIZED CONFIG FOR FAST DEVELOPMENT
 
-// Detect build type
-const isStaticExport = !!process.env.NEXT_PUBLIC_BASE_PATH;
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Conditional PWA wrapper
-const withPWA = (isDevelopment || isStaticExport)
-  ? (config) => config  // No PWA in dev or static export
-  : require('next-pwa')({
-      dest: 'public',
-      register: true,
-      skipWaiting: true,
-    });
-
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Disable strict mode to avoid double-rendering issues
   swcMinify: true,
-  // Conditional configuration based on build type
-  ...(isStaticExport && {
-    // GitHub Pages static export (ONLY when NEXT_PUBLIC_BASE_PATH is set)
-    output: 'export',
-    basePath: process.env.NEXT_PUBLIC_BASE_PATH,
+  
+  // Transpile Reown AppKit packages
+  transpilePackages: ['@reown/appkit', '@reown/appkit-adapter-wagmi'],
+  
+  // Optimize for faster dev server
+  ...(isDevelopment && {
+    // Disable type checking during dev (run separately)
+    typescript: {
+      ignoreBuildErrors: true, // Speed up dev, check types separately
+    },
+    // Disable ESLint during dev (run separately)
+    eslint: {
+      ignoreDuringBuilds: true, // Speed up dev, lint separately
+    },
   }),
+  
   images: {
-    unoptimized: isStaticExport, // Only unoptimize for static export
+    unoptimized: true, // Faster image loading in dev
   },
-  eslint: {
-    ignoreDuringBuilds: false,
-  },
-  typescript: {
-    ignoreBuildErrors: false,
-  },
-  // Webpack configuration
-  webpack: (config, { isServer }) => {
-    // Only disable cache for static export builds
-    if (isStaticExport) {
-      config.cache = false;
+  
+  // Webpack optimization
+  webpack: (config, { dev, isServer }) => {
+    // Fix Reown AppKit icon loading issues
+    if (!isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            // Keep phosphor-icons in main bundle to avoid chunk loading errors
+            phosphor: {
+              test: /[\\/]node_modules[\\/]phosphor-icons/,
+              name: 'phosphor-icons',
+              chunks: 'all',
+              priority: 20,
+            },
+            // Keep Reown AppKit in main bundle
+            reown: {
+              test: /[\\/]node_modules[\\/]@reown/,
+              name: 'reown-appkit',
+              chunks: 'all',
+              priority: 20,
+            },
+          },
+        },
+      };
     }
     
     // React Native polyfills
@@ -58,43 +73,22 @@ const nextConfig = {
     
     return config;
   },
+  
+  // Simplified headers for dev
+  ...(isDevelopment && {
+    headers: async () => {
+      return [
+        {
+          source: '/:path*',
+          headers: [
+            { key: 'X-DNS-Prefetch-Control', value: 'on' },
+            { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          ],
+        },
+      ];
+    },
+  }),
 };
 
-// Add CSP headers only for local dev server (not static export)
-if (isDevelopment && !isStaticExport) {
-  nextConfig.headers = async () => {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          { key: 'X-DNS-Prefetch-Control', value: 'on' },
-          { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
-          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
-          { key: 'X-Content-Type-Options', value: 'nosniff' },
-          { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Referrer-Policy', value: 'origin-when-cross-origin' },
-          { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
-          {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://challenges.cloudflare.com https://*.privy.io https://auth.privy.io",
-              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data: blob: https://fonts.gstatic.com https:",
-              "connect-src 'self' https://*.privy.io https://*.reown.com https://*.walletconnect.com https://*.walletconnect.org https://api.web3modal.org https://api.web3modal.com wss://*.walletconnect.com wss://*.walletconnect.org https://*.infura.io https://*.alchemyapi.io https://*.etherscan.io https://*.cloudflare.com https://challenges.cloudflare.com https://*.metamask.io https://*.coinbase.com https://www.youtube.com https://youtubei.googleapis.com https://play.google.com https://*.google.com https://*.merkle.io https://eth.merkle.io wss://*.merkle.io https://*.thirdweb.com https://56.rpc.thirdweb.com https://97.rpc.thirdweb.com https://bsc-dataseed.binance.org https://bsc-dataseed1.binance.org https://bsc-dataseed2.binance.org https://bsc-dataseed3.binance.org https://bsc-dataseed4.binance.org https://data-seed-prebsc-1-s1.binance.org:8545 https://data-seed-prebsc-2-s1.binance.org:8545 https://bsc-testnet.publicnode.com https://*.nodereal.io https://*.ankr.com https://testnet-operator-evm.orderly.org",
-              "frame-src 'self' https://*.privy.io https://auth.privy.io https://challenges.cloudflare.com https://*.walletconnect.org https://verify.walletconnect.org https://*.walletconnect.com https://www.youtube.com https://youtube.com https://www.youtube-nocookie.com",
-              "object-src 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "frame-ancestors 'self' https://*.privy.io https://auth.privy.io",
-              "upgrade-insecure-requests"
-            ].join('; ')
-          }
-        ],
-      },
-    ];
-  };
-}
+module.exports = nextConfig;
 
-module.exports = withPWA(nextConfig);

@@ -1,14 +1,14 @@
 'use client';
 
 import { createConfig, http, type CreateConnectorFn } from 'wagmi';
-import { bsc, bscTestnet } from 'wagmi/chains';
+import { bsc, bscTestnet, sepolia } from 'wagmi/chains';
 import { injected, walletConnect, metaMask } from 'wagmi/connectors';
 
-// Supported chains - ONLY BNB Smart Chain (Mainnet + Testnet)
-// This restricts the app to BSC networks ONLY
+// Supported chains - BSC + Sepolia
 export const supportedChains = [
-  bsc,          // BNB Smart Chain Mainnet (Primary)
-  bscTestnet,   // BNB Smart Chain Testnet (For testing)
+  bscTestnet,   // BSC Testnet
+  sepolia,      // Sepolia Testnet (for Pimlico)
+  bsc,          // BSC Mainnet
 ] as const;
 
 // Project ID for WalletConnect/Reown
@@ -40,34 +40,19 @@ function createConnectors(): CreateConnectorFn[] {
   return connectorsInstance;
 }
 
-// BSC RPC endpoints (multiple for redundancy)
-const BSC_RPC_URLS = [
-  'https://bsc-dataseed.binance.org',
-  'https://bsc-dataseed1.binance.org',
-  'https://bsc.publicnode.com',
-  'https://56.rpc.thirdweb.com',
-];
+// RPC endpoints
+const BSC_RPC_URLS = ['https://bsc-dataseed.binance.org'];
+const BSC_TESTNET_RPC_URLS = ['https://bsc-testnet.publicnode.com'];
+const SEPOLIA_RPC_URLS = ['https://eth-sepolia.g.alchemy.com/v2/demo'];
 
-// BSC Testnet RPC endpoints (use endpoints without specific ports to avoid CSP issues)
-const BSC_TESTNET_RPC_URLS = [
-  'https://bsc-testnet.publicnode.com',
-  'https://97.rpc.thirdweb.com',
-  'https://bsc-testnet-rpc.publicnode.com',
-];
-
-// Create wagmi config with singleton connectors - BSC ONLY
+// Create wagmi config - Multiple networks
 export const wagmiConfig = createConfig({
-  chains: [bsc, bscTestnet], // ONLY BNB Smart Chain networks
+  chains: [bscTestnet, sepolia, bsc],
   connectors: createConnectors(),
   transports: {
-    [bsc.id]: http(BSC_RPC_URLS[0], {
-      batch: true,
-      retryCount: 3,
-    }),
-    [bscTestnet.id]: http(BSC_TESTNET_RPC_URLS[0], {
-      batch: true,
-      retryCount: 3,
-    }),
+    [bscTestnet.id]: http(BSC_TESTNET_RPC_URLS[0], { batch: true, retryCount: 3 }),
+    [sepolia.id]: http(SEPOLIA_RPC_URLS[0], { batch: true, retryCount: 3 }),
+    [bsc.id]: http(BSC_RPC_URLS[0], { batch: true, retryCount: 3 }),
   },
 });
 

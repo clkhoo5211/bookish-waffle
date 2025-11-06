@@ -15,8 +15,9 @@ export function NetworkChecker() {
 
   const BSC_MAINNET_ID = 56; // BNB Smart Chain Mainnet
   const BSC_TESTNET_ID = 97; // BNB Smart Chain Testnet
+  const SEPOLIA_ID = 11155111; // Sepolia Testnet
   
-  const isCorrectNetwork = chainId === BSC_MAINNET_ID || chainId === BSC_TESTNET_ID;
+  const isCorrectNetwork = chainId === BSC_MAINNET_ID || chainId === BSC_TESTNET_ID || chainId === SEPOLIA_ID;
 
   // STRICT ENFORCEMENT: Auto-disconnect on wrong network
   useEffect(() => {

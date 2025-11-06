@@ -4,6 +4,26 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix Reown AppKit modal scrolling issues */
+w3m-modal,
+wcm-modal,
+w3m-connect-button {
+  z-index: 9999 !important;
+}
+
+/* Ensure modal content is scrollable */
+w3m-modal > div,
+wcm-modal > div {
+  max-height: 90vh !important;
+  overflow-y: auto !important;
+}
+
+/* Fix modal backdrop */
+w3m-modal::part(overlay),
+wcm-modal::part(overlay) {
+  z-index: 9998 !important;
+}
+
 :root {
   --foreground-rgb: 30, 41, 60; /* dark-500 */
   --background-start-rgb: 255, 255, 255; /* white */
@@ -12,11 +32,56 @@
   --accent: 243, 186, 47; /* accent-500 */
 }
 
+html {
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
 body {
   color: rgb(var(--foreground-rgb));
   background: #ffffff;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  height: auto;
+  min-height: 100vh;
+  position: relative;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  overscroll-behavior-y: auto;
 }
+
+/* Fix mobile scrolling issues */
+main {
+  overflow-x: hidden;
+  overflow-y: visible;
+  min-height: 100vh;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  position: relative;
+}
+
+/* Ensure all page containers allow scrolling */
+.max-w-md {
+  overflow-y: visible !important;
+  height: auto !important;
+}
+
+/* Prevent any element from blocking touch events */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fix for mobile viewport height issues */
+@supports (-webkit-touch-callout: none) {
+  html, body {
+    height: -webkit-fill-available;
+  }
+}
+
 
 /* Custom component styles matching Figma mockups */
 @layer components {

@@ -2,7 +2,7 @@
 
 import { createAppKit } from '@reown/appkit/react';
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
-import { bsc, bscTestnet } from '@reown/appkit/networks';
+import { bsc, bscTestnet, sepolia } from '@reown/appkit/networks';
 import type { AppKitNetwork } from '@reown/appkit/networks';
 import { QueryClient } from '@tanstack/react-query';
 
@@ -17,9 +17,8 @@ const metadata = {
   icons: ['https://clkhoo5211.github.io/bookish-waffle/icon-192.png'],
 };
 
-// Networks - ONLY BNB Smart Chain (Mainnet + Testnet)
-// This restricts the Reown AppKit modal to show ONLY BSC networks
-const networks: [AppKitNetwork, ...AppKitNetwork[]] = [bsc, bscTestnet];
+// Networks - BSC + Sepolia
+const networks: [AppKitNetwork, ...AppKitNetwork[]] = [bscTestnet, sepolia, bsc];
 
 // QueryClient singleton
 let queryClientInstance: QueryClient | null = null;
@@ -47,15 +46,24 @@ export const wagmiAdapter = new WagmiAdapter({
 // Create AppKit modal instance
 export const appKit = createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks, // Both BSC Testnet and BSC Mainnet
   projectId,
   metadata,
   features: {
-    analytics: false, // Disabled to prevent ad blocker console errors
+    analytics: false,
+    smartAccounts: true,
+    email: true,
+    socials: ['google', 'apple', 'x', 'discord'],
+    onramp: true,
+    swaps: true,
   },
+  // Default to BSC Testnet
+  defaultNetwork: bscTestnet,
   themeMode: 'light',
   themeVariables: {
-    '--w3m-accent': '#14b8a6', // Teal accent color
+    '--w3m-accent': '#14b8a6',
     '--w3m-border-radius-master': '16px',
   },
+  // Ensure both networks are accessible
+  allowUnsupportedChain: false,
 });
