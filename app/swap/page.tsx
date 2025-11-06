@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { RefreshCw, CheckCircle, AlertCircle, Gift, CreditCard, Wallet, Lock } from 'lucide-react';
 import { OnRampButton } from '@/components/onramp/OnRampButton';
+import { ReownSwapButton } from '@/components/swap/ReownSwapButton';
 import { MintTestTokens } from '@/components/faucet/MintTestTokens';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { useAccount, useBalance, useWriteContract, useWaitForTransactionReceipt, useChainId } from 'wagmi';
@@ -603,11 +604,28 @@ export default function SwapPage() {
                 </p>
                 
                 <div className="space-y-3 mb-4">
+                  {/* Reown Swap - Exchange tokens */}
+                  <ReownSwapButton />
+                  
+                  {/* On-Ramp - Buy with credit card */}
                   <OnRampButton 
                     token={selectedCurrency}
                     amount={requiredAmount.toString()}
                   />
                   
+                  {/* Receive - Open receive view */}
+                  <button
+                    onClick={() => {
+                      setShowBuyModal(false);
+                      openAppKit({ view: 'Account' });
+                    }}
+                    className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-green-600 hover:to-teal-600 transition-all"
+                  >
+                    <Wallet className="w-5 h-5" />
+                    Receive {selectedCurrency}
+                  </button>
+                  
+                  {/* Faucet - Only on testnet */}
                   {(chainId === bscTestnet.id || chainId === sepolia.id) && (
                     <button
                       onClick={() => {
@@ -616,7 +634,7 @@ export default function SwapPage() {
                         // Scroll to faucet section
                         document.getElementById('faucet-section')?.scrollIntoView({ behavior: 'smooth' });
                       }}
-                      className="w-full bg-purple-500 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-purple-600 transition-all"
+                      className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-purple-600 hover:to-indigo-600 transition-all"
                     >
                       <Gift className="w-5 h-5" />
                       Get Free Test Tokens (Testnet)
