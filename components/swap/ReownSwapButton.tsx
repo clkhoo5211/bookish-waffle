@@ -29,13 +29,18 @@ export function ReownSwapButton({ toToken, className = '' }: ReownSwapButtonProp
     const outputToken = toToken ? (tokenMap[toToken] || toToken) : undefined;
 
     // Open Reown swap view with pre-configured "TO" token
-    openAppKit({ 
-      view: 'Swap',
-      swap: outputToken ? {
-        defaultOutputToken: outputToken, // The token user WANTS (pre-selected)
-        // defaultInputToken can be left undefined - user selects what they have
-      } : undefined
-    });
+    // Using correct parameter structure from Reown documentation
+    if (outputToken) {
+      openAppKit({ 
+        view: 'Swap',
+        params: {
+          defaultOutputToken: outputToken,
+          defaultCryptoCurrency: outputToken,
+        }
+      });
+    } else {
+      openAppKit({ view: 'Swap' });
+    }
   };
 
   return (

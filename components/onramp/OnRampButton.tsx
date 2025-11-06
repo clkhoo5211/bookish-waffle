@@ -30,16 +30,17 @@ export function OnRampButton({ token, amount, className = '' }: OnRampButtonProp
 
     const targetToken = token ? (tokenMap[token] || token) : undefined;
     
-    // Try to configure on-ramp with target token
-    // Note: Reown on-ramp may not support token pre-selection like swap does
-    openAppKit({ 
-      view: 'OnRampProviders',
-      onramp: targetToken ? {
-        defaultCurrency: targetToken,
-        defaultOutputToken: targetToken,
-        token: targetToken,
-      } : undefined
-    });
+    // Configure on-ramp with target token using correct parameter structure
+    if (targetToken) {
+      openAppKit({ 
+        view: 'OnRampProviders',
+        params: {
+          defaultCryptoCurrency: targetToken,
+        }
+      });
+    } else {
+      openAppKit({ view: 'OnRampProviders' });
+    }
   };
 
   return (
