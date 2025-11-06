@@ -20,27 +20,9 @@ export function OnRampButton({ token, amount, className = '' }: OnRampButtonProp
   const { open: openAppKit } = useAppKit();
 
   const handleOnRamp = () => {
-    // Map common token names to their standard symbols
-    const tokenMap: { [key: string]: string } = {
-      'BNB': 'BNB',
-      'USDT': 'USDT',
-      'USDC': 'USDC',
-      'USD1': 'USDC', // Map USD1 to USDC for on-ramp compatibility
-    };
-
-    const targetToken = token ? (tokenMap[token] || token) : undefined;
-    
-    // Configure on-ramp with target token using correct parameter structure
-    if (targetToken) {
-      openAppKit({ 
-        view: 'OnRampProviders',
-        params: {
-          defaultCryptoCurrency: targetToken,
-        }
-      });
-    } else {
-      openAppKit({ view: 'OnRampProviders' });
-    }
+    // Note: Reown on-ramp doesn't support token pre-selection
+    // Users must manually select their desired token in the on-ramp modal
+    openAppKit({ view: 'OnRampProviders' });
   };
 
   return (
