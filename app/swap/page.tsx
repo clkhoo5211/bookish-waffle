@@ -617,9 +617,8 @@ export default function SwapPage() {
                   <button
                     onClick={() => {
                       setShowBuyModal(false);
-                      // Try different view parameters to open receive directly
-                      // Common options: 'WalletReceive', 'Receive', 'Account'
-                      openAppKit({ view: 'WalletReceive' });
+                      // WalletReceive works but isn't in official types - use type assertion
+                      openAppKit({ view: 'WalletReceive' as any });
                     }}
                     className="w-full bg-gradient-to-r from-green-500 to-teal-500 text-white px-4 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 hover:from-green-600 hover:to-teal-600 transition-all"
                   >
