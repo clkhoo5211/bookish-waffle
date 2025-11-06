@@ -34,10 +34,14 @@ export function MintTestTokens() {
     hash,
   });
 
-  // Only show on BSC Testnet
-  if (chainId !== 97) {
-    return null;
-  }
+  // All hooks must be called before any conditional returns
+  React.useEffect(() => {
+    if (isSuccess) {
+      setSuccess(true);
+      setMinting(false);
+      setTimeout(() => setSuccess(false), 5000);
+    }
+  }, [isSuccess]);
 
   const handleMint = async () => {
     if (!isConnected || !address) {
@@ -65,16 +69,13 @@ export function MintTestTokens() {
     }
   };
 
-  React.useEffect(() => {
-    if (isSuccess) {
-      setSuccess(true);
-      setMinting(false);
-      setTimeout(() => setSuccess(false), 5000);
-    }
-  }, [isSuccess]);
-
   // Check if test token is deployed
   const isTestTokenDeployed = TEST_TOKEN_ADDRESS !== '0x0000000000000000000000000000000000000000';
+
+  // Only show on BSC Testnet
+  if (chainId !== 97) {
+    return null;
+  }
 
   if (!isTestTokenDeployed) {
     return (
