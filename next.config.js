@@ -7,6 +7,10 @@ const nextConfig = {
   reactStrictMode: false,
   swcMinify: true,
   
+  // GitHub Pages static export
+  output: 'export',
+  basePath: process.env.NEXT_PUBLIC_BASE_PATH || '',
+  
   // Transpile only what's needed
   transpilePackages: ['@reown/appkit', '@reown/appkit-adapter-wagmi'],
   
@@ -103,40 +107,9 @@ const nextConfig = {
     return config;
   },
   
-  // Optimized headers
-  headers: async () => {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'X-DNS-Prefetch-Control',
-            value: 'on'
-          },
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=63072000; includeSubDomains; preload'
-          },
-          {
-            key: 'X-Frame-Options',
-            value: 'SAMEORIGIN'
-          },
-          {
-            key: 'X-Content-Type-Options',
-            value: 'nosniff'
-          },
-          {
-            key: 'X-XSS-Protection',
-            value: '1; mode=block'
-          },
-          {
-            key: 'Referrer-Policy',
-            value: 'origin-when-cross-origin'
-          },
-        ],
-      },
-    ];
-  },
+  // Note: headers() doesn't work with static export
+  // Security headers should be configured in GitHub Pages or hosting provider
+  // headers: async () => { ... },
   
   // Enable experimental features for better performance
   experimental: {
