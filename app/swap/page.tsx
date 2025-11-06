@@ -605,7 +605,7 @@ export default function SwapPage() {
                 
                 <div className="space-y-3 mb-4">
                   {/* Reown Swap - Exchange tokens */}
-                  <ReownSwapButton />
+                  <ReownSwapButton toToken={selectedCurrency} />
                   
                   {/* On-Ramp - Buy with credit card */}
                   <OnRampButton 
