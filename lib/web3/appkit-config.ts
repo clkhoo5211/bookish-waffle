@@ -54,7 +54,9 @@ export const appKit = createAppKit({
     smartAccounts: true,
     email: true,
     socials: ['google', 'apple', 'x', 'discord'],
-    onramp: true,
+    onramp: {
+      enabled: true,
+    },
     swaps: true,
   },
   // Default to BSC Testnet

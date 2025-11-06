@@ -20,17 +20,26 @@ export function OnRampButton({ token, amount, className = '' }: OnRampButtonProp
   const { open: openAppKit } = useAppKit();
 
   const handleOnRamp = () => {
-    // Show instruction if BNB
-    if (token === 'BNB') {
-      const proceed = confirm(
-        `💡 Tip: In the payment screen, select "${token}" from the token dropdown.\n\n` +
-        `The modal defaults to USDC, but you can change it to ${token}.`
-      );
-      if (!proceed) return;
-    }
+    // Map common token names to their standard symbols
+    const tokenMap: { [key: string]: string } = {
+      'BNB': 'BNB',
+      'USDT': 'USDT',
+      'USDC': 'USDC',
+      'USD1': 'USDC', // Map USD1 to USDC for on-ramp compatibility
+    };
+
+    const targetToken = token ? (tokenMap[token] || token) : undefined;
     
-    // Open on-ramp view directly - let Reown handle network requirements
-    openAppKit({ view: 'OnRampProviders' });
+    // Try to configure on-ramp with target token
+    // Note: Reown on-ramp may not support token pre-selection like swap does
+    openAppKit({ 
+      view: 'OnRampProviders',
+      onramp: targetToken ? {
+        defaultCurrency: targetToken,
+        defaultOutputToken: targetToken,
+        token: targetToken,
+      } : undefined
+    });
   };
 
   return (
