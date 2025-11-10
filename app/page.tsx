@@ -305,6 +305,15 @@ export default function Home() {
                         <span className="font-medium text-gray-900 text-sm">My Tokens</span>
                       </button>
                     </Link>
+                    <Link href="/smart-account" onClick={() => setShowAccountMenu(false)}>
+                      <button className="w-full px-3 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2.5 border-t border-gray-100">
+                        <svg className="w-4 h-4 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                        </svg>
+                        <span className="font-medium text-gray-900 text-sm">Smart Account</span>
+                      </button>
+                    </Link>
                     <div className="border-t border-gray-200 my-1"></div>
                     <Link href="/about" onClick={() => setShowAccountMenu(false)}>
                       <button className="w-full px-3 py-2.5 text-left hover:bg-gray-50 transition-colors flex items-center gap-2.5">
@@ -389,6 +398,17 @@ export default function Home() {
                   </svg>
                 </div>
                 <span className="text-white text-[10px] sm:text-xs text-center leading-tight font-medium">Link RVM Apps</span>
+              </Link>
+            </div>
+            <div className="mt-4 bg-[#1e293b] rounded-3xl p-4 sm:p-5 grid grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto shadow-lg">
+              <Link href="/smart-account" className="flex flex-col items-center gap-2">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-teal-400/15 rounded-xl flex items-center justify-center border border-teal-400/30">
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                  </svg>
+                </div>
+                <span className="text-white text-[10px] sm:text-xs text-center leading-tight font-medium">Smart Account</span>
               </Link>
             </div>
           </div>
